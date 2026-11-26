@@ -232,20 +232,16 @@ export const OVERRIDE_CSS = `
   flex: none;
 }
 .dsb-dir-new-badge {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 980px;
   corner-shape: round;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: light-dark(#ffffff, #323236);
-  color: var(--dsb-primary);
-  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.12));
-  box-shadow:
-    0 2px 10px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.36)),
-    0 0.5px 1.5px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.24));
-  transition: transform 220ms cubic-bezier(0.28, 0, 0.22, 1), background-color 180ms ease, color 180ms ease, box-shadow 220ms ease;
+  background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.07));
+  color: light-dark(#6e6e73, #98989d);
+  transition: transform 200ms cubic-bezier(0.28, 0, 0.22, 1), background-color 180ms ease, color 180ms ease;
 }
 .dsb-dir-preview-empty {
   position: absolute;
@@ -286,15 +282,13 @@ export const OVERRIDE_CSS = `
     0 14px 32px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42));
 }
 .dsb-dir-card:hover .dsb-dir-new-badge {
-  transform: scale(1.06);
-  background: var(--dsb-primary);
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 4px 14px light-dark(rgba(0, 113, 227, 0.32), rgba(41, 151, 255, 0.36));
+  transform: scale(1.04);
+  background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.14));
+  color: light-dark(#1d1d1f, #f5f5f7);
 }
 .dsb-dir-card:hover .dsb-dir-enter,
 .dsb-dir-card:focus-visible .dsb-dir-enter {
-  color: ${BRAND};
+  color: light-dark(#1d1d1f, #f5f5f7);
   opacity: 1;
   transform: translateX(1px);
 }
@@ -303,7 +297,7 @@ export const OVERRIDE_CSS = `
   box-shadow: 0 1px 4px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.26));
 }
 .dsb-dir-card:active .dsb-dir-enter {
-  color: ${BRAND_ACTIVE};
+  color: light-dark(#1d1d1f, #f5f5f7);
 }
 .dsb-dir-card:focus-visible {
   outline: none;
