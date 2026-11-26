@@ -50,19 +50,34 @@ export const OVERRIDE_CSS = `
 .dsb-root button:focus, .dsb-root button:focus-visible { outline: none; box-shadow: none; }
 .dsb-root .dsb-close-btn:hover { background: light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10)); color: var(--dsb-ink); }
 .dsb-topbar-pill {
-  background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.06));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 980px;
+  corner-shape: round;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  background: light-dark(#f5f5f7, rgba(255, 255, 255, 0.08));
   color: light-dark(#1d1d1f, #f5f5f7);
-  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.14));
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.10), rgba(255, 255, 255, 0.14));
+  box-shadow: 0 0.5px 1px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.24));
   transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease;
 }
 .dsb-topbar-pill:hover {
-  background: light-dark(rgba(0, 0, 0, 0.065), rgba(255, 255, 255, 0.11));
+  background: light-dark(#eaeaef, rgba(255, 255, 255, 0.14));
 }
 .dsb-topbar-pill:active { transform: scale(0.97); }
 .dsb-topbar-pill[data-open="true"] {
   background: light-dark(#1d1d1f, #f5f5f7);
   color: light-dark(#ffffff, #1d1d1f);
   border-color: transparent;
+  box-shadow: 0 2px 8px light-dark(rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.36));
 }
 .dsb-picker-row {
   display: flex;
@@ -1244,7 +1259,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
               <button
                 type="button" title="导出当前页" disabled={exporting} className="dsb-topbar-pill" data-open={exportOpen ? 'true' : 'false'}
                 onMouseDown={(e) => e.preventDefault()} onClick={() => setExportOpen(o => !o)}
-                style={{ ...ICON_BUTTON, height: 32, padding: '0 13px', gap: 6, fontWeight: 500, opacity: exporting ? 0.5 : 1 }}
+                style={{ opacity: exporting ? 0.5 : 1 }}
               ><Icon name="download" size={15} />导出</button>
               {exportOpen && (
                 <>
@@ -1264,7 +1279,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
             type="button" title={currentPreset ? `设计体系：${currentPreset.name}` : '选择设计体系'}
             className="dsb-topbar-pill" data-open={pickerOpen ? 'true' : 'false'}
             onMouseDown={(e) => e.preventDefault()} onClick={() => setPickerOpen(o => !o)}
-            style={{ ...ICON_BUTTON, flex: '0 1 auto', minWidth: 28, height: 32, padding: '0 13px', gap: 6, fontWeight: 500, maxWidth: 180 }}
+            style={{ flex: '0 1 auto', minWidth: 28, maxWidth: 180 }}
           >
             {currentPreset && !pickerOpen && (
               <span
