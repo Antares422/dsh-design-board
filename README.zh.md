@@ -1,71 +1,89 @@
 # dsh-design-board（设计画布）
 
+[![CI](https://github.com/Antares422/dsh-design-board/actions/workflows/ci.yml/badge.svg)](https://github.com/Antares422/dsh-design-board/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-1d1d1f.svg)](LICENSE)
+[![DSH Compatibility](https://img.shields.io/badge/DSH-%3E%3D0.2.0--0%20%3C0.3.0-0071e3.svg)](https://github.com/deepseek-ai/deepseek-harness)
+
 [English](README.md) | 中文
 
-**面向 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) 最新版本的开源交互式设计画布插件。**
+**把 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) 右侧栏变成类 Figma 的交互式设计画布。**
 
-将 DSH 右侧栏扩展为类 Figma 的多帧设计评审画布：并排展示 Agent 产出的交互式 HTML 设计稿，直接在画布上点选/框选 DOM 元素、绘制矩形与文字标注，并自动将结构化反馈回传给 Agent，无需复制代码或截图标注。
+在右侧画布并排预览 Agent 产出的多份交互式 HTML 设计稿，直接点选或框选页面 DOM 元素、添加文字标注并自动回传给 Agent 原地改稿；内置 **165 套精选设计体系预设**（默认采用 Apple 设计规范）。
+
+![dsh-design-board 演示](docs/assets/demo.gif)
 
 ---
 
 ## 核心特性
 
-- **多帧无限画布**：基于 `@xyflow/react`，当 Agent 写入或 `present` `design/<任务名>/board.json`（或任意 `.html` 设计目录）时自动打开右侧画布；支持缩放平移、多页签（`pages`）、排序（`order`）与画布便签（`notes`）。
-- **所见即所得的元素指认与标注回传**：
-  - 在画布帧内直接点选或拖拽框选 DOM 元素，精准捕获 CSS 选择器与文本片段。
-  - 支持在帧上或画布空白处添加矩形框选与文字批注。
-  - 选中与标注在下一轮对话前以隐藏 `<design-feedback>` 上下文自动注入给 Agent，不污染聊天输入框。
-- **交互模式（Play）与深浅主题一键切换**：随时在「标注模式」与「可点击交互模式」间切换，并一键切换全画布帧的浅色 / 深色主题。
-- **自动质量门禁（`<design-check>`）**：自动校验每个 HTML 帧是否包含真实交互、深浅双主题、资源自包含与零运行时报错；未通过的帧会静默通知 Agent 原地修复。
-- **内置 165 套设计体系预设（默认 Apple 设计规范）**：
-  - 内置 165 套精选品牌与风格设计体系（Apple、Linear、Airbnb、Stripe、Notion、Vercel 等），支持搜索、分类筛选、调色板/字体阶梯/圆角间距/完整参考页可视化预览。
-  - 向 Agent 提供 `design_preset` 工具（`list` / `read`），按需读取真实 `DESIGN.md`、`tokens.css` 与 `components.html`。
-  - 未显式选择体系时，默认通过内置技能 `design-board-apple-style` 采用 **Apple 设计规范**。
-- **一键导出**：支持将单帧或整个画板导出为高清 PNG、多页 PDF 或单文件 HTML 画廊。
+- **多帧无限画布与原生 Apple 交互**：基于 `@xyflow/react`，配备单层毛玻璃悬浮工具栏、丝滑滑动分段胶囊、连续缩放滑块（支持键盘 `←` / `→` 缩放）与全屏沉浸查看。
+- **所见即所得的元素指认与标注回传**：在画布帧内直接点选或拖拽框选 DOM 元素，或添加文字批注；精准 CSS 选择器与标注会在下一轮对话前以隐藏 `<design-feedback>` 自动注入给 Agent，告别截图标注和反复描述「左上角第二个按钮」。
+- **内置 165 套设计体系预设（默认 Apple 规范）**：内置 Apple、Linear、Airbnb、Stripe、Notion、Vercel 等 165 套设计体系，支持搜索、分类筛选、调色板/字体阶梯/圆角间距/完整参考页实时预览；未指定风格时默认启用 Apple 设计规范。
+- **实时交互模式与深浅主题一键切换**：随时切入 `Play` 交互模式真实点击和测试页面控件，一键切换浅色 / 深色主题。
+- **自动质量门禁（`<design-check>`）**：自动校验真实交互、深浅双主题、资源自包含与运行时报错；修复期间原位平滑保持「正在优化」加载态，静默通知 Agent 原地修好。
+- **内置克制审美规范（拒绝 AI Slop）**：默认设计 Skill 严禁爹味灰字提示、中英文括号凑字数、卡片左侧彩色粗边框/滥用渐变/emoji 以及竖排文字，也严禁模型私自拉起浏览器截图。
+- **一键导出**：支持单帧或整页导出为高清 PNG、多页 PDF 或单文件 HTML 画廊。
 
 ---
 
-## 版本兼容
+## 实机截图
 
-- **DeepSeek Harness (DSH)**：`>=0.2.0-0 <0.3.0`（已对齐最新 `dsh-v0.2.3-alpha.2` 插件规范）
-- **运行端**：DSH Web / Desktop 右侧栏（`@deepseek-ai/dsh-client-ui-sidebar-right`）
+### 双方案并排对比
+![双方案并排对比](docs/assets/canvas-compare.jpg)
+
+### 内置 165 套设计体系
+![内置 165 套设计体系](docs/assets/presets.jpg)
+
+### 画布内直接点选与框选 DOM 元素
+![画布内直接点选与框选 DOM 元素](docs/assets/element-pick.jpg)
 
 ---
 
-## 安装方式
+## 快速安装
 
-### 方式一：本地克隆安装（开箱即用）
+### 方式一：直接丢给 DSH 一句话安装（最省事）
+
+直接在 DeepSeek Harness 对话框里发送：
+
+```text
+帮我安装这个插件：https://github.com/Antares422/dsh-design-board
+```
+
+### 方式二：通过 DSH CLI 安装
+
+```bash
+dsh plugin --profile web add "github:Antares422/dsh-design-board"
+```
+
+或本地克隆后安装目录：
 
 ```bash
 git clone https://github.com/Antares422/dsh-design-board.git
+dsh plugin --profile web add /绝对路径/dsh-design-board
 ```
 
-通过 DSH CLI 安装到当前 Profile：
+也可在 DSH 桌面端 / Web 的 **插件（Plugins） → 添加插件（Add plugin）** 中直接选择 GitHub 仓库或本地克隆目录。
 
-```bash
-dsh plugin add /绝对路径/dsh-design-board
-```
-
-或在 DSH 桌面端 / Web 界面中点击 **插件（Plugins）** → **添加插件（Add plugin）**，选择克隆后的 `dsh-design-board` 目录即可。
-
-> 仓库已包含预构建的 `index.js` 与 `client.js`，克隆后无需先执行构建即可直接安装使用。
-
-### 方式二：通过 npm 安装（发布至 npm 后）
-
-```bash
-dsh plugin add dsh-design-board
-```
+> 仓库已提交预构建的 `index.js` 与 `client.js`（同时附带在 GitHub Release 压缩包中），安装后开箱即用，无需手动构建。
 
 ---
 
-## 使用流程
+## 使用示例
 
-1. 在 DSH 中安装并启用 **设计画布（Design Board）** 插件。
-2. 直接在对话里让 Agent 做页面或视觉方案，例如：
-   - 「帮我设计一个 SaaS 账单管理后台」
-   - 「给我两个不同视觉方向的 AI 编程工具官网首屏」
-3. Agent 会自动写入 `design/<任务名>/board.json` 与自包含 HTML 帧，右侧栏自动展开设计画布。
-4. 可在画布右上角点击「设计体系」切换 165 套内置风格；也可直接在帧上点选元素或画标注，随后在聊天框输入修改意见，Agent 会自动收到精准定位并原地更新。
+直接正常对话即可，无需刻意提「打开画布」：
+
+- 「给我两个不同方向的 AI 接口用量监控面板」
+- 「设计一个极简专注计时器页面」
+- 在画布中点选/框选元素或添加标注后，直接发：「按我圈的改一下」
+- 点右上角「设计体系」选定任意风格后，发：「按我选的风格再出一版」
+
+---
+
+## 安全与隐私说明
+
+- **100% 纯本地运行**：画布渲染、元素捕获、预设读取与图片/PDF 导出均在本机 DSH 实例内完成。
+- **零遥测、零外部上报**：不依赖任何第三方账号或云服务，不向任何外部服务器上报数据。
+- **源码完全透明可验证**：全部源码位于 `src/` 与 `skills/`，CI 自动运行全部 136 项单元测试，随时可自行执行 `npm run build` 校验产物。
 
 ---
 
@@ -84,7 +102,7 @@ dsh plugin add dsh-design-board
 ```bash
 npm install
 npm run build   # 使用 esbuild 重新构建 client.js 与 index.js
-npm test        # 运行全量单元测试（Node 内置 test runner）
+npm test        # 运行全部 136 项单元测试
 ```
 
 ---
