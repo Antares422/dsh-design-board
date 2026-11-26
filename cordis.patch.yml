@@ -1,0 +1,5 @@
+# Design Board plugin layer: adds a multi-frame interactive design canvas
+# with element picking, annotation feedback, and 165 built-in presets to the right sidebar.
+- insert:
+    - id: design-board
+      name: 'dsh-design-board'

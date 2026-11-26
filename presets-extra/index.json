@@ -1,0 +1,82 @@
+{
+  "systems": [
+    {
+      "id": "1win",
+      "name": "1win",
+      "category": "Fintech & Crypto",
+      "description": "Near-black crypto casino and sportsbook: heavy Inter, vivid green CTA, dense game tiles."
+    },
+    {
+      "id": "aljazeera",
+      "name": "Al Jazeera",
+      "category": "Media & Consumer",
+      "description": "Hard-news editorial system: flat white paper, dense Roboto headlines, one saturated orange."
+    },
+    {
+      "id": "dell-1996",
+      "name": "Dell (1996)",
+      "category": "Retro & Nostalgic",
+      "description": "Catalog-era web: black page frame, flat colour-block ribbon cards, Arial Black over Times."
+    },
+    {
+      "id": "dji",
+      "name": "DJI",
+      "category": "Media & Consumer",
+      "description": "Product-photography showroom: square gutter-separated tiles, white canvas, one engineering blue, pill actions."
+    },
+    {
+      "id": "hp",
+      "name": "HP",
+      "category": "Professional & Corporate",
+      "description": "White-paper enterprise-consumer system: HP Electric Blue as the lone CTA, near-black ink, geometric sans."
+    },
+    {
+      "id": "jobright",
+      "name": "Jobright",
+      "category": "Productivity & SaaS",
+      "description": "AI job-hunting platform: spring-mint green on black and white, pale mint bands, bold condensed Titillium Web."
+    },
+    {
+      "id": "mercury",
+      "name": "Mercury",
+      "category": "Fintech & Crypto",
+      "description": "Fintech banking: an ink-violet night homepage and near-white product pages held together by one indigo."
+    },
+    {
+      "id": "mydealz",
+      "name": "mydealz",
+      "category": "E-Commerce & Retail",
+      "description": "High-density German deals community: brand green, stacked white-card feed, hot/cold temperature badges."
+    },
+    {
+      "id": "nerdwallet",
+      "name": "NerdWallet",
+      "category": "Fintech & Crypto",
+      "description": "Personal-finance comparison: one deep green over a ladder of mints, green hero band, near-white content."
+    },
+    {
+      "id": "nintendo-2001",
+      "name": "Nintendo (2001)",
+      "category": "Retro & Nostalgic",
+      "description": "Brushed-periwinkle console chrome: beveled metal panels, amber-glow navigation, outlined display type."
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "category": "Professional & Corporate",
+      "description": "Enterprise system on a warm neutral ladder: charcoal actions, Georgia serif product pages, red held to the wordmark."
+    },
+    {
+      "id": "oura",
+      "name": "Oura",
+      "category": "Media & Consumer",
+      "description": "Warm-paper wellness: Editorial serif with a quiet grotesque, cream-and-earth palette, black ink bands."
+    },
+    {
+      "id": "sap",
+      "name": "SAP",
+      "category": "Professional & Corporate",
+      "description": "Enterprise system on white: two greys and one blue, quiet 60px chrome over a product tab rail."
+    }
+  ]
+}

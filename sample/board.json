@@ -1,0 +1,7 @@
+{
+  "title": "更新弹窗对比示例",
+  "frames": [
+    { "id": "a", "title": "方案 A · v1.0", "file": "a.html", "width": 480, "height": 360 },
+    { "id": "b", "title": "方案 B · v2.0", "file": "b.html", "width": 480, "height": 360 }
+  ]
+}

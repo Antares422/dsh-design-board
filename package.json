@@ -1,0 +1,77 @@
+{
+  "name": "dsh-design-board",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "displayName": "Design Board",
+  "description": "Side-by-side interactive design canvas for DeepSeek Harness (DSH): preview agent-generated HTML designs, pick & annotate elements, and style with 165 built-in design system presets.",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "cordis",
+    "design-board",
+    "design-system",
+    "ui-design",
+    "canvas",
+    "plugin"
+  ],
+  "author": "Antares422",
+  "homepage": "https://github.com/Antares422/dsh-design-board#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Antares422/dsh-design-board.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Antares422/dsh-design-board/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "dsh": ">=0.2.0-0 <0.3.0"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "locale/*.json",
+    "presets",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "icon": "./icon.svg",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/*.test.js",
+    "presets": "node scripts/build-presets.mjs"
+  },
+  "devDependencies": {
+    "@xyflow/react": "12.12.0",
+    "esbuild": "0.25.0",
+    "html-to-image": "^1.11.13",
+    "pdf-lib": "^1.17.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
