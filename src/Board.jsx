@@ -72,8 +72,9 @@ export const OVERRIDE_CSS = `
   top: 0;
   left: 0;
   width: 44px;
-  height: 36px;
+  height: 34px;
   border-radius: 980px;
+  corner-shape: round;
   pointer-events: none;
   background: light-dark(#ffffff, #56565c);
   border: 0.5px solid light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.14));
@@ -88,7 +89,9 @@ export const OVERRIDE_CSS = `
   position: relative;
   z-index: 1;
   width: 44px;
-  height: 36px;
+  height: 34px;
+  border-radius: 980px;
+  corner-shape: round;
   color: light-dark(#6e6e73, #aeaeb2);
   transition: color 180ms cubic-bezier(0.28, 0, 0.22, 1), transform 120ms cubic-bezier(0.28, 0, 0.22, 1);
 }
@@ -96,8 +99,10 @@ export const OVERRIDE_CSS = `
 .dsb-dock-btn:active { transform: scale(0.93); }
 .dsb-dock-btn[data-active="true"] { color: var(--dsb-primary); }
 .dsb-dock-action {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
+  border-radius: 980px;
+  corner-shape: round;
   color: light-dark(#6e6e73, #aeaeb2);
   transition: color 160ms ease, background-color 160ms ease, transform 120ms ease;
 }
@@ -175,12 +180,15 @@ export const OVERRIDE_CSS = `
 .dsb-root .react-flow__viewport { will-change: transform; backface-visibility: hidden; }
 .dsb-root .react-flow__node { padding: 0; border: none; background: transparent; box-shadow: none; backface-visibility: hidden; }
 .dsb-root .react-flow__background-pattern { fill: light-dark(#d2d2d7, rgba(255,255,255,.14)) !important; }
-.dsb-dir-page { container-type: inline-size; }
+.dsb-dir-page {
+  container-type: inline-size;
+  background: light-dark(#f5f5f7, #141416);
+}
 .dsb-dir-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 236px), 1fr));
-  gap: 16px;
-  margin-top: 18px;
+  gap: 18px;
+  margin-top: 20px;
 }
 @container (max-width: 499px) {
   .dsb-dir-grid { grid-template-columns: minmax(0, 1fr); }
@@ -202,24 +210,42 @@ export const OVERRIDE_CSS = `
   box-sizing: border-box;
   padding: 0;
   overflow: hidden;
-  background: ${FLOAT.background};
+  background: light-dark(#ffffff, #1f1f22);
   color: ${FLOAT.color};
-  border: ${FLOAT.border};
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.03);
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.07), rgba(255, 255, 255, 0.1));
+  border-radius: 18px;
+  box-shadow:
+    0 1px 2px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.24)),
+    0 6px 18px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.28));
   text-align: left;
   font: inherit;
   cursor: pointer;
-  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+  transition: transform 220ms cubic-bezier(0.28, 0, 0.22, 1), box-shadow 220ms cubic-bezier(0.28, 0, 0.22, 1), border-color 180ms ease;
 }
 .dsb-dir-preview {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: light-dark(#f5f5f7, #1d1d1f);
-  border-bottom: 1px solid ${BORDER};
+  background: light-dark(#fbfbfd, #26262a);
+  border-bottom: 0.5px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.08));
   flex: none;
+}
+.dsb-dir-new-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 980px;
+  corner-shape: round;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: light-dark(#ffffff, #323236);
+  color: var(--dsb-primary);
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.12));
+  box-shadow:
+    0 2px 10px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.36)),
+    0 0.5px 1.5px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.24));
+  transition: transform 220ms cubic-bezier(0.28, 0, 0.22, 1), background-color 180ms ease, color 180ms ease, box-shadow 220ms ease;
 }
 .dsb-dir-preview-empty {
   position: absolute;
@@ -238,7 +264,7 @@ export const OVERRIDE_CSS = `
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 12px 14px;
+  padding: 12px 16px;
   flex: none;
 }
 .dsb-dir-enter {
@@ -249,28 +275,39 @@ export const OVERRIDE_CSS = `
   font-size: 12px;
   font-weight: 500;
   color: ${FG2};
-  transition: color 140ms ease;
+  opacity: 0.72;
+  transition: color 180ms ease, opacity 180ms ease, transform 180ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 .dsb-dir-card:hover {
-  border-color: color-mix(in srgb, ${BRAND} 65%, ${BORDER});
-  box-shadow: 0 2px 6px rgba(0,0,0,.05), 0 8px 20px rgba(0,0,0,.05);
+  transform: translateY(-2px);
+  border-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.18));
+  box-shadow:
+    0 2px 6px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.3)),
+    0 14px 32px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42));
+}
+.dsb-dir-card:hover .dsb-dir-new-badge {
+  transform: scale(1.06);
+  background: var(--dsb-primary);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px light-dark(rgba(0, 113, 227, 0.32), rgba(41, 151, 255, 0.36));
 }
 .dsb-dir-card:hover .dsb-dir-enter,
 .dsb-dir-card:focus-visible .dsb-dir-enter {
   color: ${BRAND};
+  opacity: 1;
+  transform: translateX(1px);
 }
 .dsb-dir-card:active {
-  background: color-mix(in srgb, ${BRAND} 5%, ${FLOAT.background});
-  border-color: ${BRAND_ACTIVE};
-  box-shadow: 0 1px 2px rgba(0,0,0,.03);
+  transform: scale(0.985);
+  box-shadow: 0 1px 4px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.26));
 }
 .dsb-dir-card:active .dsb-dir-enter {
   color: ${BRAND_ACTIVE};
 }
 .dsb-dir-card:focus-visible {
-  outline: 2px solid ${SELECT};
-  outline-offset: 2px;
-  border-color: ${BRAND};
+  outline: none;
+  box-shadow: 0 0 0 2px ${SELECT}, 0 6px 18px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.3));
 }
 `
 
@@ -385,26 +422,26 @@ export function DirectoryPickerView({ state, open, onCreateNew }) {
   return (
     <div className="dsb-root dsb-dir-page" style={{ position: 'relative', height: '100%', overflowY: 'auto', padding: 24, boxSizing: 'border-box' }}>
       <div>
-        <h1 style={{ margin: 0, fontFamily: DISPLAY, fontSize: 22, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.015em' }}>设计目录</h1>
+        <h1 style={{ margin: 0, fontFamily: DISPLAY, fontSize: 26, fontWeight: 600, lineHeight: '32px', letterSpacing: '-0.022em' }}>设计目录</h1>
         {state.status === 'loading' && (
-          <div role="status" style={{ ...FLOAT, marginTop: 18, borderRadius: 14, boxShadow: 'none', padding: '28px 20px', color: FG2, fontSize: 13, lineHeight: '20px' }}>正在读取…</div>
+          <div role="status" style={{ ...FLOAT, marginTop: 18, borderRadius: 16, boxShadow: 'none', padding: '28px 20px', color: FG2, fontSize: 13, lineHeight: '20px' }}>正在读取…</div>
         )}
         {state.status === 'error' && (
-          <div role="alert" style={{ ...FLOAT, marginTop: 18, borderRadius: 14, boxShadow: 'none', padding: '28px 20px', color: FG2, fontSize: 13, lineHeight: '20px' }}>读取设计目录失败</div>
+          <div role="alert" style={{ ...FLOAT, marginTop: 18, borderRadius: 16, boxShadow: 'none', padding: '28px 20px', color: FG2, fontSize: 13, lineHeight: '20px' }}>读取设计目录失败</div>
         )}
         {state.status === 'ready' && (
           <div className="dsb-dir-grid">
             {createNew && (
-              <button type="button" className="dsb-dir-card" title="新建" onClick={createNew}>
-                <div className="dsb-dir-preview" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: FG2 }}>
-                  <span style={{ width: 44, height: 44, borderRadius: 999, border: `1px dashed ${BORDER}`, background: FLOAT.background, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button type="button" className="dsb-dir-card" title="新建" onMouseDown={(e) => e.preventDefault()} onClick={createNew}>
+                <div className="dsb-dir-preview" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="dsb-dir-new-badge">
                     <Icon name="plus" size={20} />
                   </span>
                 </div>
                 <span className="dsb-dir-meta">
-                  <strong style={{ display: 'block', fontFamily: DISPLAY, fontSize: 14, fontWeight: 600, lineHeight: '20px', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>新建</strong>
+                  <strong style={{ display: 'block', fontFamily: DISPLAY, fontSize: 15, fontWeight: 600, lineHeight: '20px', letterSpacing: '-0.015em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>新建</strong>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 4, lineHeight: '18px' }}>
-                    <span style={{ color: FG2, fontSize: 12, whiteSpace: 'nowrap' }}>空白看板</span>
+                    <span style={{ color: FG2, fontSize: 12, whiteSpace: 'nowrap' }}>空白画布</span>
                     <span className="dsb-dir-enter">
                       <span>进入</span>
                       <span style={{ display: 'inline-flex', transform: 'rotate(-90deg)' }} aria-hidden="true"><Icon name="chevron" size={14} /></span>
@@ -414,10 +451,10 @@ export function DirectoryPickerView({ state, open, onCreateNew }) {
               </button>
             )}
             {state.items.map(item => (
-              <button key={item.path} type="button" className="dsb-dir-card" title={item.name} onClick={() => open(`${item.path}/board.json`)}>
+              <button key={item.path} type="button" className="dsb-dir-card" title={item.name} onMouseDown={(e) => e.preventDefault()} onClick={() => open(`${item.path}/board.json`)}>
                 <HtmlPreview html={item.preview?.html} width={item.preview?.width} title={item.name} />
                 <span className="dsb-dir-meta">
-                  <strong style={{ display: 'block', fontFamily: DISPLAY, fontSize: 14, fontWeight: 600, lineHeight: '20px', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</strong>
+                  <strong style={{ display: 'block', fontFamily: DISPLAY, fontSize: 15, fontWeight: 600, lineHeight: '20px', letterSpacing: '-0.015em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</strong>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 4, lineHeight: '18px' }}>
                     <span style={{ color: FG2, fontSize: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{item.files} 个文件</span>
                     <span className="dsb-dir-enter">
@@ -466,7 +503,17 @@ function ToolButton({ active, title, onClick, className = 'dsb-dock-btn', childr
       className={className}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      style={{ ...ICON_BUTTON, minWidth: 0, padding: 0, borderRadius: PILL, cornerShape: ROUND }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: 'none',
+        background: 'transparent',
+        padding: 0,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        flex: 'none',
+      }}
     >{children}</button>
   )
 }

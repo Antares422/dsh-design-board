@@ -3,7 +3,7 @@ import { useReactFlow, useViewport } from '@xyflow/react'
 import { useBoard } from './context.js'
 import { hitAnnotations } from './erase.js'
 import { Icon } from './icons.jsx'
-import { BORDER, BRAND, BRAND_ACTIVE, CANVAS, FG2, FLOAT, INK, PILL, ROUND, tint } from './theme.js'
+import { BORDER, BRAND, BRAND_ACTIVE, CANVAS, DOCK, FG2, FLOAT, INK, PILL, ROUND, tint } from './theme.js'
 
 const ERASE_MIN = 8 // 屏幕像素：橡皮擦半径范围
 const ERASE_MAX = 120
@@ -258,17 +258,33 @@ export function AnnotationLayer() {
       {erasing && eraserPos && (
         <div style={{
           position: 'absolute', left: eraserPos.x - eraseRadius, top: eraserPos.y - eraseRadius, width: eraseRadius * 2, height: eraseRadius * 2,
-          borderRadius: '50%', cornerShape: ROUND, boxSizing: 'border-box', pointerEvents: 'none', border: `1.5px solid ${BRAND_ACTIVE}`, background: tint(BRAND, sweeping ? 22 : 10),
+          borderRadius: '50%', cornerShape: ROUND, boxSizing: 'border-box', pointerEvents: 'none',
+          border: '1px solid light-dark(rgba(0, 113, 227, 0.55), rgba(41, 151, 255, 0.65))',
+          background: sweeping
+            ? 'light-dark(rgba(0, 113, 227, 0.14), rgba(41, 151, 255, 0.2))'
+            : 'light-dark(rgba(0, 113, 227, 0.06), rgba(41, 151, 255, 0.1))',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
+          boxShadow: '0 2px 10px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3))',
         }} />
       )}
 
       {erasing && (
         <div
           onPointerDown={(e) => e.stopPropagation()} onPointerMove={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}
-          style={{ ...FLOAT, position: 'absolute', left: '50%', bottom: 76, transform: 'translateX(-50%)', zIndex: 3, display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px', fontSize: 12, cursor: 'default', pointerEvents: 'auto' }}
+          style={{ ...DOCK, position: 'absolute', left: '50%', bottom: 70, transform: 'translateX(-50%)', zIndex: 3, display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px', fontSize: 12, cursor: 'default', pointerEvents: 'auto' }}
         >
-          <input type="range" min={ERASE_MIN} max={ERASE_MAX} value={eraseRadius} onChange={(e) => changeEraseRadius(e.target.value)} style={{ width: 140 }} />
-          <span style={{ minWidth: 32, textAlign: 'right' }}>{eraseRadius * 2}px</span>
+          <input
+            type="range"
+            min={ERASE_MIN}
+            max={ERASE_MAX}
+            value={eraseRadius}
+            aria-label="橡皮擦大小"
+            className="dsb-zoom-slider"
+            style={{ width: 120, '--dsb-zoom-pct': `${((eraseRadius - ERASE_MIN) / (ERASE_MAX - ERASE_MIN)) * 100}%` }}
+            onChange={(e) => changeEraseRadius(e.target.value)}
+          />
+          <span style={{ minWidth: 34, textAlign: 'right', fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: FG2 }}>{eraseRadius * 2}px</span>
         </div>
       )}
 
