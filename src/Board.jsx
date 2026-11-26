@@ -20,7 +20,7 @@ import { fileAddress, pathOfAddress } from './paths.js'
 import { useFrames } from './useFrames.js'
 import { splitFrames } from './validate.js'
 import { scanDesignDirs } from './scan.js'
-import { resolveSessionDesignPhase } from './sessionDesign.js'
+import { resolveSessionDesignPhase, sessionBoardPath } from './sessionDesign.js'
 import { BORDER, BRAND, BRAND_ACTIVE, CANVAS, DOCK, FG2, FLOAT, ICON_BUTTON, PILL, ROUND, SELECT, DISPLAY, tint } from './theme.js'
 
 const nodeTypes = { frame: FrameNode, note: NoteNode }
@@ -690,8 +690,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
     setAnnotations(list => list.map(a => (changed.has(a.frameId) ? { ...a, stale: true } : a)))
     setSelections(list => list.filter(s => !changed.has(s.frameId)))
     setHover(null)
-    showToast(`已刷新 ${ids.length} 个帧，对应标注标为过期`)
-  }, [showToast])
+  }, [])
 
   const state = useFrames({ boardPath, readBytes, list, watchDir, onChanged })
   // 校验：静态问题来自 useFrames，运行时报错来自帧里的探针；没通过的不上画板，只回传给 Agent
@@ -1338,7 +1337,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
 
           <CanvasMarqueeLayer marquee={canvasMarquee} />
 
-          {toast && <div style={{ ...FLOAT, position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', padding: '6px 14px', fontSize: 13, zIndex: 12 }}>{toast}</div>}
+          {toast && <div style={{ ...DOCK, position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', padding: '6px 14px', fontSize: 13, zIndex: 12 }}>{toast}</div>}
 
           <ZoomControls rf={rf} />
 
@@ -1430,7 +1429,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
   )
 }
 
-/** 右侧栏正文：未绑定会话先浏览目录卡片，返回或关标签均可重选；Agent 交付或已有对话会话的画布实质交互后正式绑定，新会话不执行锁定。 */
+/** 右侧栏正文：按会话严格隔离，每个会话固定读写专属目录 `design/<sessionId>/board.json`（兼容旧会话已有绑定），不扫描也不展示其他会话的设计目录。 */
 export function Board(props) {
   const { tab } = props.useTabInfo()
   const sessionSnap = props.useSession ? props.useSession(s => s) : undefined
@@ -1441,8 +1440,8 @@ export function Board(props) {
     fallbackBlank: Boolean(props.isBlankSession?.()),
   })
   const requestedPath = (tab.contentId && pathOfAddress(tab.contentId)) || null
+  const isolatedPath = sessionBoardPath(props.sessionId) || null
   const [boundPath, setBoundPath] = useState(() => props.getDesignPath?.() || null)
-  const [browsingPath, setBrowsingPath] = useState(null)
   useEffect(() => {
     setBoundPath(props.getDesignPath?.() || null)
     return props.subscribeDesign?.(() => setBoundPath(props.getDesignPath?.() || null))
@@ -1453,30 +1452,14 @@ export function Board(props) {
       setBoundPath(null)
     }
   }, [phase, boundPath, props.clearDesign, props.getDesignPath, props.sessionId])
-  useEffect(() => { setBrowsingPath(null) }, [props.sessionId])
   const effectiveBoundPath = phase === 'blank' ? null : boundPath
+  const boardPath = effectiveBoundPath || isolatedPath || requestedPath || null
   const open = useCallback((path) => tab.actions.openResource(fileAddress(props.sessionId, path), { replaceTab: true }), [tab.actions, props.sessionId])
   useEffect(() => {
-    if (effectiveBoundPath && requestedPath && requestedPath !== effectiveBoundPath) open(effectiveBoundPath)
-  }, [effectiveBoundPath, requestedPath, open])
-  const activePath = effectiveBoundPath || browsingPath || requestedPath
-  const boardPath = activePath === BLANK ? null : activePath
+    if (boardPath && requestedPath && requestedPath !== boardPath) open(boardPath)
+  }, [boardPath, requestedPath, open])
   const isBound = Boolean(effectiveBoundPath)
   const canBind = phase === 'active' && !isBound && Boolean(boardPath)
-  const boundRef = useRef(isBound)
-  boundRef.current = isBound
-  useEffect(() => {
-    if (!effectiveBoundPath && activePath === null) {
-      props.syncBoard?.('')
-      props.syncFeedback?.('')
-    }
-  }, [effectiveBoundPath, activePath, props.syncBoard, props.syncFeedback])
-  useEffect(() => () => {
-    if (!boundRef.current) {
-      props.syncBoard?.('')
-      props.syncFeedback?.('')
-    }
-  }, [props.syncBoard, props.syncFeedback])
   const commitBind = useCallback(() => {
     if (!boardPath || phase !== 'active') return false
     if (props.bindDesign?.(boardPath) === false) return false
@@ -1485,25 +1468,6 @@ export function Board(props) {
     if (requestedPath && requestedPath !== next) open(next)
     return true
   }, [boardPath, phase, props.bindDesign, props.getDesignPath, requestedPath, open])
-  const backToDirs = useCallback(() => {
-    setBrowsingPath(null)
-    if (requestedPath) tab.actions.openTab?.('design-board', { replaceTab: true })
-  }, [requestedPath, tab.actions])
-  if (activePath === null) {
-    return (
-      <ErrorBoundary>
-        <DirectoryPicker
-          sessionId={props.sessionId}
-          syncPreset={props.syncPreset}
-          list={props.list}
-          readBytes={props.readBytes}
-          open={setBrowsingPath}
-          onSelect={setBrowsingPath}
-          onCreateNew={() => setBrowsingPath(BLANK)}
-        />
-      </ErrorBoundary>
-    )
-  }
   return (
     <ErrorBoundary>
       <ReactFlowProvider>
@@ -1512,7 +1476,6 @@ export function Board(props) {
           sessionId={props.sessionId}
           boardPath={boardPath}
           isBound={isBound}
-          onBack={isBound ? undefined : backToDirs}
           onCommitBind={canBind ? commitBind : undefined}
           readBytes={props.readBytes}
           list={props.list}

@@ -1,112 +1,99 @@
 # dsh-design-board
 
 [![CI](https://github.com/Antares422/dsh-design-board/actions/workflows/ci.yml/badge.svg)](https://github.com/Antares422/dsh-design-board/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/dsh-design-board?color=0071e3)](https://www.npmjs.com/package/dsh-design-board)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1d1d1f.svg)](LICENSE)
-[![DSH Compatibility](https://img.shields.io/badge/DSH-%3E%3D0.2.0--0%20%3C0.3.0-0071e3.svg)](https://github.com/deepseek-ai/deepseek-harness)
+[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.2.0--0%20%3C0.3.0-0071e3.svg)](https://github.com/deepseek-ai/deepseek-harness)
 
-[English](README.md) | [中文](README.zh.md)
+中文 | [English](README.en.md)
 
-**Turn [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) into a Figma-like interactive design canvas.**
+**给 DeepSeek Harness 装上一块设计画布。**
 
-Compare multiple agent-generated HTML prototypes side by side in the right sidebar, inspect or marquee-select DOM elements, draw annotations that feed straight back to the agent, and style pages with **165 built-in design system presets** (Apple style by default).
+从内置的 165 套设计体系里挑好风格，说一句需求，可交互的页面就会在右侧画布直接展开。支持单页精修，也能把多个方案同屏并排对比；哪里不满意，直接在画布上点选或框选元素留句话就能改——不用来回切浏览器，也不用再截图圈位置了。
 
-![dsh-design-board demo](docs/assets/demo.gif)
+![dsh-design-board 演示](docs/assets/demo.gif)
 
----
+## 核心功能
 
-## Highlights
+- **165 套内置设计体系**：涵盖 Apple、Linear、Airbnb、Stripe、Notion、Vercel 等风格，每套均包含设计规范、CSS 变量表与参考组件。在右上角预览并选用后，AI 即按该规范直接出稿；未指定时默认使用 Apple 规范。
+- **右侧无限画布与并排对比**：自动渲染 Agent 生成的交互式 HTML 设计稿，支持同屏对比多个方案、滑块或方向键缩放、分页签与全屏查看。
+- **点选元素与文字批注**：直接点击或拖拽框选页面内的 DOM 元素并添加备注，精准 CSS 选择器与批注会在下一轮对话自动回传给 Agent 原地更新，无需截图描述。
+- **真实交互与深浅主题**：可切换至 Play 模式直接操作页面内的按钮、筛选与标签切换，一键切换浅色或深色主题。
+- **质量校验与会话隔离**：自动检测交互可用性、双主题支持与运行时报错，问题静默回传原地修复；每个会话独立使用 `design/<sessionId>/` 目录，互不串台。
+- **多格式导出**：支持单帧或整页导出为 PNG、多页 PDF 或单文件 HTML 画廊。
 
-- **Side-by-Side Infinite Canvas**: Powered by `@xyflow/react` with Apple-style frosted glass floating dock, sliding segmented tool switcher, continuous zoom slider (`←` / `→` keyboard zoom supported), and immersive full-screen preview.
-- **Direct Visual Feedback Loop**: Click or marquee-select DOM elements inside any frame or drop text notes directly on the canvas. Exact CSS selectors, text snippets, and annotations are injected silently as `<design-feedback>` before the next agent step — zero screenshot pasting.
-- **165 Built-in Design System Presets**: Search, filter by category, and visually inspect 165 curated design systems (Apple, Linear, Airbnb, Stripe, Notion, Vercel, etc.) with real palettes, typography ramps, spacing/radius tokens, and preview pages. Defaults to **Apple** style when no preset is chosen.
-- **Live Interactive Play Mode & Light/Dark Toggle**: Switch between element-picking mode and live interactive mode (`Play`), or toggle every frame between light and dark themes in one click.
-- **Automatic Quality Gate (`<design-check>`)**: Validates real interactivity, light/dark themes, self-contained assets, and runtime errors; failing frames stay smoothly in a refining state while notifying the agent silently to fix in place.
-- **Anti-AI-Slop Default Skill**: Built-in design instructions forbid patronizing helper copy, parenthetical filler, gratuitous neon/glow/card-stripe clutter, and vertical text layouts.
-- **One-Click Export**: Export single frames or the entire board to PNG, multi-page PDF, or a standalone HTML gallery.
+## 界面预览
 
----
+### 内置 165 套设计体系
+![内置 165 套设计体系](docs/assets/presets.jpg)
 
-## Screenshots
+### 多方案并排对比
+![多方案并排对比](docs/assets/canvas-compare.jpg)
 
-### Side-by-Side Design Comparison
-![Side-by-side design comparison](docs/assets/canvas-compare.jpg)
+### 画布内点选与框选元素
+![画布内点选与框选元素](docs/assets/element-pick.jpg)
 
-### 165 Built-in Design Systems
-![165 built-in design systems](docs/assets/presets.jpg)
+## 安装
 
-### Visual DOM Element Picking & Marquee Selection
-![Visual DOM element picking](docs/assets/element-pick.jpg)
+### 在 DSH 应用内安装
 
----
-
-## Quick Install
-
-### Option 1: Ask DSH to install it directly (easiest)
-
-Paste this message straight into your DeepSeek Harness chat:
+打开 **插件 → 添加插件**，输入包名并安装启用：
 
 ```text
-Install this plugin for me: https://github.com/Antares422/dsh-design-board
+dsh-design-board
 ```
 
-### Option 2: Install via DSH CLI
+或者直接在对话框发送：
+
+```text
+帮我安装这个插件：https://github.com/Antares422/dsh-design-board
+```
+
+### 通过 CLI 安装
 
 ```bash
+# 从 npm 安装
+dsh plugin --profile web add dsh-design-board
+
+# 从 GitHub 安装
 dsh plugin --profile web add "github:Antares422/dsh-design-board"
 ```
 
-Or clone locally and add the directory:
+使用 DSH 桌面端时建议直接在应用内的「插件 → 添加插件」安装，以免装入 `web` 配置目录。仓库与 npm 均包含预构建产物，安装后无需本地编译。
 
-```bash
-git clone https://github.com/Antares422/dsh-design-board.git
-dsh plugin --profile web add /absolute/path/to/dsh-design-board
-```
+## 使用示例
 
-In DSH Desktop / Web UI, you can also open **Plugins -> Add plugin** and select either the GitHub repository or the cloned folder.
+安装启用后直接正常对话即可：
 
-> Prebuilt `index.js` and `client.js` are committed in the repository and attached to GitHub Releases, so no build step is needed to install.
+- 「给我两个不同方向的 AI 接口用量监控面板」
+- 「用 Linear 风格设计一个 API 配额管理台」
+- 点右上角「设计体系」选中任意风格后，发：「按我选的风格再出一版」
+- 在画布内点选或框选目标元素并添加批注后，发：「按我圈的改一下」
 
----
+## 快捷键
 
-## Usage
+| 快捷键 | 说明 |
+| --- | --- |
+| `V` | 选择与框选元素 |
+| `H` | 拖拽平移画布 |
+| `T` | 添加文字批注 |
+| `E` | 橡皮擦 |
+| `I` | Play 交互模式 |
+| `←` / `→` | 缩小 / 放大画布 |
+| `Esc` | 退出全屏或清空选中 |
 
-Just ask the agent naturally — no need to mention the canvas:
+## 隐私与安全
 
-- *"Give me two different visual directions for an AI API usage dashboard."*
-- *"Design a minimalist Pomodoro timer page."*
-- Pick elements or add annotations on the canvas, then simply say: *"Update based on my selections and notes."*
-- Pick any of the 165 presets from the top-right **Design System** button, then say: *"Create another direction using the selected style."*
+全部预设读取、画布渲染、元素捕获与文件导出均在本机运行，无遥测、无外部数据上报、无需登录任何账号。源码完全公开，CI 自动运行全部 136 项单元测试。
 
----
-
-## Security & Privacy
-
-- **100% Local-Only**: All board rendering, element picking, preset lookups, and exports run locally inside your DSH instance.
-- **Zero Telemetry / Zero External Requests**: No analytics, no remote accounts, no data sent to third-party servers.
-- **Fully Auditable**: Source code lives under `src/` and `skills/`, tested by 136 unit tests in CI; you can rebuild `client.js` and `index.js` anytime via `npm run build`.
-
----
-
-## Architecture
-
-| Part | Entry | Responsibility |
-| --- | --- | --- |
-| Host plugin (Node / Cordis) | `index.js` (`src/host.js`) | Registers `/dsh-design-board/context` & `/dsh-design-board/binding` routes, injects hidden context on `agent/pre-step`, registers `design-board` & `design-board-apple-style` skills, and exposes the `design_preset` tool. |
-| Client plugin (Browser) | `client.js` (`src/index.jsx`) | Registers the `design-board` tab in `ctx.sidebarRightTabs`, mounts `<Board />` into `sidebar.right.pane.tab`, and syncs session bindings & visual feedback to the host. |
-| Bundle patch | `cordis.patch.yml` | Inserts the `design-board` plugin row into the DSH profile composition. |
-
----
-
-## Development
+## 本地开发
 
 ```bash
 npm install
-npm run build   # Rebuild client.js and index.js via esbuild
-npm test        # Run all 136 Node built-in unit tests
+npm run build
+npm test
 ```
 
----
+## 许可协议
 
-## License
-
-MIT License — see [LICENSE](LICENSE).
+[MIT](LICENSE)

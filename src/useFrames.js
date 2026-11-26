@@ -52,8 +52,14 @@ export function useFrames({ boardPath, readBytes, list, watchDir, onChanged }) {
   const onChangedRef = useRef(onChanged)
   onChangedRef.current = onChanged
 
-  // 监听是非递归的：清单所在目录 + 每个帧文件所在的目录都要监听
-  const [dirs, setDirs] = useState(boardPath ? [dirOf(boardPath)] : [])
+  // 监听是非递归的：清单所在目录、其父目录（捕捉新建会话目录）以及每个帧文件所在目录都要监听
+  const baseWatchDirs = (p) => {
+    if (!p) return []
+    const dir = dirOf(p)
+    const parent = dirOf(dir)
+    return parent && parent !== dir ? [parent, dir] : [dir]
+  }
+  const [dirs, setDirs] = useState(() => baseWatchDirs(boardPath))
   const dirsKey = dirs.join('|')
 
   useEffect(() => {
@@ -80,9 +86,8 @@ export function useFrames({ boardPath, readBytes, list, watchDir, onChanged }) {
               if (controller.signal.aborted) return
               if (frame && frame.kind === 'change') bump()
             }
-          } catch (error) {
+          } catch {
             if (controller.signal.aborted) return
-            setState(s => ({ ...s, watchError: String(error) }))
           }
           if (controller.signal.aborted) return
           await waitRetry()
@@ -138,7 +143,7 @@ export function useFrames({ boardPath, readBytes, list, watchDir, onChanged }) {
           const listed = await list(dir, signal)
           manifest = manifestFromListing(dir, listed.ok ? listed.value.entries : [])
         }
-        const wanted = [...new Set([dir, ...manifest.frames.map(f => dirOf(dir + '/' + f.file))])]
+        const wanted = [...new Set([...baseWatchDirs(boardPath), ...manifest.frames.map(f => dirOf(dir + '/' + f.file))])]
         setDirs(prev => (prev.join('|') === wanted.join('|') ? prev : wanted))
         const loaded = await Promise.all(manifest.frames.map(async f => {
           try {

@@ -17,6 +17,30 @@ const stripMacPrivate = p => p.replace(/^\/private(?=\/(?:tmp|var)(?:\/|$))/, ''
 
 const normalizeSlashes = p => String(p).replace(/\\/g, '/').replace(/\/+$/, '')
 
+/** 将 sessionId 规整为单段安全目录名，供多会话严格隔离使用。 */
+export function sessionDesignSlug(sessionId) {
+  if (typeof sessionId !== 'string') return undefined
+  const clean = sessionId.trim().replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^\.+|\.+$/g, '')
+  return clean || undefined
+}
+
+/** 返回当前会话专属的设计看板路径 `design/<sessionSlug>/board.json`。 */
+export function sessionBoardPath(sessionId) {
+  const slug = sessionDesignSlug(sessionId)
+  return slug ? `design/${slug}/board.json` : undefined
+}
+
+/** 判断本次工具调用是否刚读取了 `design-board` 技能，用于在写文件前即锁定并下发本会话专属目录。 */
+export function isDesignBoardSkillRead(exec) {
+  if (!exec || typeof exec !== 'object' || exec.name !== 'skill') return false
+  let args = exec.arguments
+  if (typeof args === 'string') {
+    try { args = JSON.parse(args) } catch { return false }
+  }
+  if (!args || typeof args !== 'object') return false
+  return (args.name ?? args.skill ?? args.id) === 'design-board'
+}
+
 /**
  * 将相对路径或工作区内绝对路径解析为规范看板路径 `design/<目录>/board.json`。
  * 只接受 `design/<目录>/board.json` 或 `design/<目录>/*.html`；不合法路径返回 undefined。

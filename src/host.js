@@ -1,7 +1,7 @@
 import { createPresetRunner, PARTS } from './presetTool.js'
 import { createContextStore, createContextHandler } from './hiddenContext.js'
 import { buildBoardBinding } from './feedback.js'
-import { boardPathOfDesignFile, createBindingHandler, createSessionDesignBindings, extractToolDesignPath } from './sessionDesign.js'
+import { boardPathOfDesignFile, createBindingHandler, createSessionDesignBindings, extractToolDesignPath, isDesignBoardSkillRead, sessionBoardPath } from './sessionDesign.js'
 import guide from '../skills/design-board.md'
 import appleStyle from '../presets/apple/DESIGN.md'
 
@@ -77,8 +77,14 @@ export function apply(ctx) {
   })
   ctx.on('tools/result', (exec, result) => {
     if (result?.isError || !exec?.agent?.session || exec.agent.session.header?.origin === 'subagent') return
+    const sid = exec.agent.session.id
+    if (isDesignBoardSkillRead(exec)) {
+      const isolated = sessionBoardPath(sid)
+      if (isolated) claimDesign(sid, isolated)
+      return
+    }
     const boardPath = extractToolDesignPath(exec)
-    if (boardPath) claimDesign(exec.agent.session.id, boardPath)
+    if (boardPath) claimDesign(sid, boardPath)
   })
   // 看板的选择/标注/设计体系在下一步前追加成隐藏消息：聊天里不显示，也不进输入框
   ctx.on('agent/pre-step', async ({ agent, step, signal }, next) => {

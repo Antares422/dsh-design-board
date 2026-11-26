@@ -1,10 +1,10 @@
 {
   "name": "dsh-design-board",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "type": "module",
-  "displayName": "Design Board",
-  "description": "Side-by-side interactive design canvas for DeepSeek Harness (DSH): preview agent-generated HTML designs, pick & annotate elements, and style with 165 built-in design system presets.",
+  "displayName": "设计画布",
+  "description": "DeepSeek Harness 右侧栏设计画布插件，内置 165 套设计体系，选好风格即可让 AI 按规范直接出稿，并在画布中并排对比与点选元素原地改稿。",
   "keywords": [
     "dsh",
     "deepseek-harness",
@@ -45,7 +45,7 @@
     "locale/*.json",
     "presets",
     "README.md",
-    "README.zh.md",
+    "README.en.md",
     "LICENSE"
   ],
   "icon": "./icon.svg",
