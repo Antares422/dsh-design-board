@@ -58,6 +58,11 @@ test('低对比度和固定宽度布局会提示质量问题', () => {
   assert.deepEqual(codes(html), ['low-contrast', 'fixed-overflow'])
 })
 
+test('max-width 与 @media min-width 不会误报 fixed-overflow', () => {
+  const html = GOOD.replace(':root{--bg:#fff}', ':root{--bg:#fff} .wrap{max-width:1280px} @media (min-width: 1024px){.wrap{padding:24px}}')
+  assert.deepEqual(codes(html), [])
+})
+
 test('splitFrames：有静态或运行时问题的拦下，其余显示；旧版页面的运行时问题不算', () => {
   const frames = [
     { id: 'a', url: 'u1', issues: [] },

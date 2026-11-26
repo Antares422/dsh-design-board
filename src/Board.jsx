@@ -48,6 +48,15 @@ export const OVERRIDE_CSS = `
   background: var(--dsb-canvas); color: var(--dsb-ink);
 }
 .dsb-root button:focus, .dsb-root button:focus-visible { outline: none; box-shadow: none; }
+@keyframes dsb-spin { to { transform: rotate(360deg); } }
+.dsb-spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.14));
+  border-top-color: light-dark(rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.55));
+  animation: dsb-spin 780ms linear infinite;
+}
 .dsb-root .dsb-close-btn:hover { background: light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10)); color: var(--dsb-ink); }
 .dsb-topbar-pill {
   display: inline-flex;
@@ -688,6 +697,12 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
   // 校验：静态问题来自 useFrames，运行时报错来自帧里的探针；没通过的不上画板，只回传给 Agent
   const [runtime, setRuntime] = useState({}) // 帧 id → { url, issues }
   const { shown: frames, rejected } = useMemo(() => splitFrames(state.frames || [], runtime), [state.frames, runtime])
+  // 未通过自动校验的帧保留在原位展示「正在优化」占位，不再从画布突然消失；通过校验的帧按原顺序展示
+  const rejectedIds = useMemo(() => new Set(rejected.map(r => r.id)), [rejected])
+  const displayFrames = useMemo(
+    () => (state.frames || []).map(f => (rejectedIds.has(f.id) ? { ...f, url: undefined, pendingReason: 'refining' } : f)),
+    [state.frames, rejectedIds],
+  )
   const framesRef = useRef(frames)
   framesRef.current = frames
   const manifest = state.manifest ?? { title: '设计画布', frames: [], pages: [], notes: [] }
@@ -720,7 +735,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
     }
   }, [boardPath, preset])
 
-  const frameById = useMemo(() => new Map(frames.map(f => [f.id, f])), [frames])
+  const frameById = useMemo(() => new Map(displayFrames.map(f => [f.id, f])), [displayFrames])
   useEffect(() => {
     if (!boardPath || state.status !== 'ready') return
     setAnnotations(list => (list.some(a => a.frameId && !a.stale && !frameById.has(a.frameId)) ? list.map(a => (a.frameId && !frameById.has(a.frameId) ? { ...a, stale: true } : a)) : list))
@@ -729,7 +744,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
 
   const pages = manifest.pages || []
   const shownPage = currentPageId(pageId, pages)
-  const pageFrames = useMemo(() => framesOnPage(frames, shownPage, pages), [frames, shownPage, pages])
+  const pageFrames = useMemo(() => framesOnPage(displayFrames, shownPage, pages), [displayFrames, shownPage, pages])
   const pageNotes = useMemo(() => notesOnPage(manifest.notes || [], shownPage, pages), [manifest.notes, shownPage, pages])
   const pageRejected = useMemo(() => rejected.filter(f => pages.length === 0
     ? true
@@ -1283,18 +1298,6 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
             onMouseDown={(e) => e.preventDefault()} onClick={() => setPickerOpen(o => !o)}
             style={{ flex: '0 1 auto', minWidth: 28, maxWidth: 180 }}
           >
-            {currentPreset && !pickerOpen && (
-              <span
-                aria-hidden="true"
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  flex: 'none',
-                  background: currentPreset.palette?.find(c => c.name === '强调色')?.hex || BRAND,
-                }}
-              />
-            )}
             <Icon name="palette" size={15} />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentPreset ? currentPreset.name : '设计体系'}</span>
           </button>
@@ -1304,8 +1307,9 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
           <div style={{ display: 'flex', gap: 4, padding: '6px 12px', borderBottom: `1px solid ${BORDER}`, overflowX: 'auto', whiteSpace: 'nowrap' }}>
             {pages.map(p => (
               <button
-                key={p.id} type="button" onClick={() => setPageId(p.id)}
-                style={{ ...ICON_BUTTON, flex: 'none', height: 30, padding: '0 14px', borderRadius: PILL, cornerShape: ROUND, background: p.id === shownPage ? BRAND : 'transparent', color: p.id === shownPage ? '#fff' : 'inherit', fontWeight: p.id === shownPage ? 600 : 400 }}
+                key={p.id} type="button" className="dsb-topbar-pill" data-open={p.id === shownPage ? 'true' : 'false'}
+                onMouseDown={(e) => e.preventDefault()} onClick={() => setPageId(p.id)}
+                style={{ flex: 'none', height: 28, padding: '0 12px', fontSize: 12 }}
               >{p.name}</button>
             ))}
           </div>
@@ -1375,28 +1379,47 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
           )}
         </div>
 
-        {immersiveFrame && (
+        {immersiveFrame && immersiveFrame.url && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', flexDirection: 'column', background: CANVAS }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', fontSize: 13, borderBottom: `1px solid ${BORDER}` }}>
-              <button type="button" style={ICON_BUTTON} onClick={() => setImmersive(null)}><Icon name="back" size={16} />返回画布</button>
-              <strong style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 17, letterSpacing: '-0.015em' }}>{immersiveFrame.title}</strong>
-              <div style={{ position: 'relative' }}>
-                <button type="button" title="下载" style={ICON_BUTTON} onClick={() => setExportOpen(o => !o)}><Icon name="download" size={18} /></button>
-                {exportOpen && (
-                  <div style={{ ...FLOAT, position: 'absolute', right: 0, top: 32, zIndex: 21, width: 120, padding: 6 }}>
-                    {['html', 'png', 'pdf'].map(type => (
-                      <button key={type} type="button" style={{ ...ICON_BUTTON, display: 'flex', width: '100%', justifyContent: 'flex-start', padding: '0 8px', height: 32 }} onClick={() => { setExportOpen(false); exportFrame(immersiveFrame, type) }}>{type.toUpperCase()}</button>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', fontSize: 13, borderBottom: `1px solid ${BORDER}` }}>
+              <button
+                type="button" className="dsb-zoom-btn" onMouseDown={(e) => e.preventDefault()}
+                style={{ ...ICON_BUTTON, height: 30, padding: '0 10px 0 6px', fontWeight: 500, color: 'inherit' }}
+                onClick={() => setImmersive(null)}
+              ><Icon name="back" size={16} />返回画布</button>
+              <strong style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 17, letterSpacing: '-0.015em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{immersiveFrame.title}</strong>
               <span style={{ marginLeft: 'auto' }} />
               <button
-                type="button" disabled={!immersiveTheme?.supported} onClick={toggleImmersiveTheme}
-                title={!immersiveTheme ? '正在检测页面主题…' : immersiveTheme.supported ? (immersiveTheme.dark ? '切换到浅色' : '切换到深色') : '这个页面没做深浅两套主题：让 Agent 补上'}
-                style={{ ...ICON_BUTTON, opacity: immersiveTheme?.supported ? 1 : 0.35, cursor: immersiveTheme?.supported ? 'pointer' : 'default' }}
-              ><Icon name={immersiveTheme?.dark ? 'sun' : 'moon'} size={18} /></button>
-              <button type="button" title="退出全屏 (Esc)" style={ICON_BUTTON} onClick={() => setImmersive(null)}><Icon name="collapse" size={18} /></button>
+                type="button" className="dsb-zoom-btn" disabled={!immersiveTheme?.supported} onMouseDown={(e) => e.preventDefault()} onClick={toggleImmersiveTheme}
+                title={!immersiveTheme ? '正在检测页面主题…' : immersiveTheme.supported ? (immersiveTheme.dark ? '切换到浅色' : '切换到深色') : '未提供深浅双主题'}
+                style={{ ...ICON_BUTTON, width: 30, height: 30, opacity: immersiveTheme?.supported ? 1 : 0.32, cursor: immersiveTheme?.supported ? 'pointer' : 'default' }}
+              ><Icon name={immersiveTheme?.dark ? 'sun' : 'moon'} size={17} /></button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button" className="dsb-zoom-btn" title="下载" onMouseDown={(e) => e.preventDefault()}
+                  style={{ ...ICON_BUTTON, width: 30, height: 30 }}
+                  onClick={() => setExportOpen(o => !o)}
+                ><Icon name="download" size={17} /></button>
+                {exportOpen && (
+                  <>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 20 }} onPointerDown={() => setExportOpen(false)} />
+                    <div style={{ ...FLOAT, position: 'absolute', right: 0, top: 36, zIndex: 21, width: 112, padding: 6, borderRadius: 14 }}>
+                      {['html', 'png', 'pdf'].map(type => (
+                        <button
+                          key={type} type="button" className="dsb-zoom-btn" onMouseDown={(e) => e.preventDefault()}
+                          style={{ ...ICON_BUTTON, display: 'flex', width: '100%', justifyContent: 'flex-start', padding: '0 10px', height: 32, borderRadius: 8 }}
+                          onClick={() => { setExportOpen(false); exportFrame(immersiveFrame, type) }}
+                        >{type.toUpperCase()}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              <button
+                type="button" className="dsb-zoom-btn" title="退出全屏 Esc" onMouseDown={(e) => e.preventDefault()}
+                style={{ ...ICON_BUTTON, width: 30, height: 30 }}
+                onClick={() => setImmersive(null)}
+              ><Icon name="collapse" size={17} /></button>
             </div>
             <iframe ref={immersiveRef} name="dsb-immersive" src={immersiveFrame.url} sandbox="allow-scripts" title={immersiveFrame.title} style={{ flex: 1, minHeight: 0, width: '100%', border: 'none', background: '#fff' }} />
           </div>

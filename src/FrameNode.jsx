@@ -103,34 +103,54 @@ export const FrameNode = memo(function FrameNode({ id }) {
     b.pickAt(id, ...localPoint(e), { single: e.altKey })
   }
 
+  const ready = Boolean(frame.url)
+  const keepFocus = (e) => e.preventDefault()
+
   return (
     <div style={{ width, height, position: 'relative' }}>
       <div className="nodrag nopan" style={{
         position: 'absolute', left: 0, top: -TITLE_HEIGHT, width: '100%', height: TITLE_HEIGHT,
-        display: 'flex', alignItems: 'center', gap: 10, fontSize: 20, fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '-0.015em', color: FG2,
+        display: 'flex', alignItems: 'center', gap: 6, fontSize: 19, fontFamily: DISPLAY, fontWeight: 600, letterSpacing: '-0.015em', color: FG2,
       }}>
         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{frame.title}</span>
         <button
-          type="button" disabled={!theme?.supported} onClick={() => b.toggleTheme(id)}
-          title={!theme ? '正在检测页面主题…' : theme.supported ? (theme.dark ? '切换到浅色' : '切换到深色') : '这个页面没做深浅两套主题：让 Agent 补上'}
-          style={{ ...ICON_BUTTON, opacity: theme?.supported ? 1 : 0.35, cursor: theme?.supported ? 'pointer' : 'default' }}
-        ><Icon name={theme?.dark ? 'sun' : 'moon'} size={22} /></button>
-        <button type="button" title="单独查看" style={ICON_BUTTON} onClick={() => b.setImmersive(id)}><Icon name="expand" size={22} /></button>
+          type="button" className="dsb-zoom-btn" disabled={!ready || !theme?.supported} onMouseDown={keepFocus} onClick={() => b.toggleTheme(id)}
+          title={!ready ? '生成完成后可用' : !theme ? '正在检测页面主题…' : theme.supported ? (theme.dark ? '切换到浅色' : '切换到深色') : '未提供深浅双主题'}
+          style={{ ...ICON_BUTTON, width: 32, height: 32, opacity: ready && theme?.supported ? 1 : 0.32, cursor: ready && theme?.supported ? 'pointer' : 'default' }}
+        ><Icon name={theme?.dark ? 'sun' : 'moon'} size={20} /></button>
+        <button
+          type="button" className="dsb-zoom-btn" disabled={!ready} onMouseDown={keepFocus}
+          title={ready ? '单独查看' : '生成完成后可用'}
+          style={{ ...ICON_BUTTON, width: 32, height: 32, opacity: ready ? 1 : 0.32, cursor: ready ? 'pointer' : 'default' }}
+          onClick={() => ready && b.setImmersive(id)}
+        ><Icon name="expand" size={20} /></button>
         <div style={{ position: 'relative' }}>
-          <button type="button" title="下载" style={ICON_BUTTON} onClick={() => setExportOpen(o => !o)}><Icon name="download" size={22} /></button>
-          {exportOpen && (
-            <div className="nodrag nopan" style={{ ...FLOAT, position: 'absolute', right: 0, top: 32, zIndex: 20, width: 120, padding: 6 }}>
-              {['html', 'png', 'pdf'].map(type => (
-                <button key={type} type="button" style={{ ...ICON_BUTTON, display: 'flex', width: '100%', justifyContent: 'flex-start', padding: '0 8px', height: 32, borderBottom: type === 'pdf' ? 'none' : `1px solid ${BORDER}` }} onClick={() => { setExportOpen(false); b.exportFrame(frame, type) }}>{type.toUpperCase()}</button>
-              ))}
-            </div>
+          <button
+            type="button" className="dsb-zoom-btn" disabled={!ready} onMouseDown={keepFocus}
+            title={ready ? '下载' : '生成完成后可用'}
+            style={{ ...ICON_BUTTON, width: 32, height: 32, opacity: ready ? 1 : 0.32, cursor: ready ? 'pointer' : 'default' }}
+            onClick={() => ready && setExportOpen(o => !o)}
+          ><Icon name="download" size={20} /></button>
+          {exportOpen && ready && (
+            <>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 19 }} onPointerDown={() => setExportOpen(false)} />
+              <div className="nodrag nopan" style={{ ...FLOAT, position: 'absolute', right: 0, top: 36, zIndex: 20, width: 112, padding: 6, borderRadius: 14 }}>
+                {['html', 'png', 'pdf'].map(type => (
+                  <button
+                    key={type} type="button" className="dsb-zoom-btn" onMouseDown={keepFocus}
+                    style={{ ...ICON_BUTTON, display: 'flex', width: '100%', justifyContent: 'flex-start', padding: '0 10px', height: 32, borderRadius: 8 }}
+                    onClick={() => { setExportOpen(false); b.exportFrame(frame, type) }}
+                  >{type.toUpperCase()}</button>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
       <div style={{
-        position: 'relative', width, height, background: theme?.dark ? '#1d1d1f' : '#fff', borderRadius: 8,
-        boxShadow: '0 1px 3px rgba(0,0,0,.18), 0 0 0 1px rgba(128,128,128,.25)',
-        backfaceVisibility: 'hidden', transform: 'translateZ(0)',
+        position: 'relative', width, height, background: theme?.dark ? '#1d1d1f' : '#fff', borderRadius: 12,
+        boxShadow: '0 2px 12px rgba(0,0,0,.08), 0 0 0 0.5px rgba(0,0,0,.10)',
+        backfaceVisibility: 'hidden', transform: 'translateZ(0)', overflow: 'hidden',
       }}>
         {frame.url && (
           <iframe
@@ -138,16 +158,21 @@ export const FrameNode = memo(function FrameNode({ id }) {
             ref={setIframeRef}
             src={frame.url} sandbox="allow-scripts" title={frame.title}
             style={{
-              width, height, border: 'none', borderRadius: 8,
+              width, height, border: 'none', borderRadius: 12,
               pointerEvents: playing ? 'auto' : 'none', display: 'block',
               backfaceVisibility: 'hidden', transform: 'translateZ(0)',
             }}
           />
         )}
-        {frame.error && !frame.url && (
-          <div style={{ padding: 16, color: FG2, fontSize: 14 }} title={frame.error}>
-            生成中…
-            <div style={{ fontSize: 12, marginTop: 4 }}>等待 {frame.file} 写出</div>
+        {!frame.url && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
+            background: 'light-dark(#fbfbfd, #1c1c1e)', color: FG2,
+          }}>
+            <span className="dsb-spinner" aria-hidden="true" />
+            <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 500, letterSpacing: '-0.01em' }}>
+              {frame.pendingReason === 'refining' ? '正在优化' : '正在生成'}
+            </div>
           </div>
         )}
 
@@ -169,7 +194,7 @@ export const FrameNode = memo(function FrameNode({ id }) {
           })} />
         )}
 
-        {selecting && (
+        {selecting && ready && (
           <div
             ref={overlay}
             style={{ position: 'absolute', inset: 0, cursor: 'default' }}

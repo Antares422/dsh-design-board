@@ -33,7 +33,7 @@ export function validateFrame(html) {
     const ratio = (Math.max(luminance(colors.fg), luminance(colors.bg)) + 0.05) / (Math.min(luminance(colors.fg), luminance(colors.bg)) + 0.05)
     if (ratio < 4.5) issues.push(issue('low-contrast', `--fg 与 --bg 的对比度约为 ${ratio.toFixed(1)}:1，低于正文建议的 4.5:1。`))
   }
-  if (/\b(?:width|min-width)\s*:\s*(?:1\d{3,}px|1\d{2}vw)\b/i.test(html)) {
+  if (/(?<![-\w])(?:width|min-width)\s*:\s*(?:1\d{3,}px|1\d{2}vw)(?!\s*\))/i.test(html)) {
     issues.push(issue('fixed-overflow', '页面包含可能导致窄屏溢出的固定宽度，请改用 max-width、流式布局或媒体查询。'))
   }
   return issues
