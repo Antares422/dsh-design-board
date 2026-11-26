@@ -1129,11 +1129,12 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
   }, [annotations, coversOf, manifest.frames, manifest.title, selections, rejected])
 
   const exportImages = useCallback(async (list, type, suffix) => {
-    if (exporting || !list.length) return
+    const readyList = list.filter(f => f.url)
+    if (exporting || !readyList.length) return
     setExporting(true)
     try {
       if (type === 'html') {
-        downloadText(buildHtmlGallery(list, manifest.title, {
+        downloadText(buildHtmlGallery(readyList, manifest.title, {
           source: manifest.source || boardPath || 'design',
           version: manifest.version,
           status: manifest.status,
@@ -1143,9 +1144,9 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
         return
       }
       const pagesData = []
-      for (let i = 0; i < list.length; i++) {
-        const frame = list[i]
-        showToast(`正在导出 ${i + 1}/${list.length}…`)
+      for (let i = 0; i < readyList.length; i++) {
+        const frame = readyList[i]
+        showToast(`正在导出 ${i + 1}/${readyList.length}…`)
         const { width, height } = sizeOf(frame)
         const dataUrl = await frameImage(ask, frame.id, width, height, { type: type === 'png' ? 'png' : 'jpeg', pixelRatio: 2 })
         if (type === 'png') downloadDataUrl(dataUrl, exportName(frame.title, '', 'png'))
@@ -1153,7 +1154,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
       }
       if (type === 'pdf') {
         const bytes = await buildPdf(pagesData)
-        downloadBytes(bytes, exportName(list.length === 1 ? list[0].title : manifest.title, list.length === 1 ? '' : suffix, 'pdf'), 'application/pdf')
+        downloadBytes(bytes, exportName(readyList.length === 1 ? readyList[0].title : manifest.title, readyList.length === 1 ? '' : suffix, 'pdf'), 'application/pdf')
       }
       showToast(`${type.toUpperCase()} 已导出`)
     } catch (error) {
