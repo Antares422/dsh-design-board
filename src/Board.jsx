@@ -47,7 +47,7 @@ export const OVERRIDE_CSS = `
   --dsb-display: "SF Pro Display", "SF Pro Icons", -apple-system, "Helvetica Neue", Helvetica, Arial, "PingFang SC", sans-serif;
   background: var(--dsb-canvas); color: var(--dsb-ink);
 }
-.dsb-root button:focus-visible { outline: 2px solid var(--dsb-select); outline-offset: 1px; }
+.dsb-root button:focus, .dsb-root button:focus-visible { outline: none; box-shadow: none; }
 .dsb-root .dsb-close-btn:hover { background: light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10)); color: var(--dsb-ink); }
 .dsb-dock-shell {
   background: light-dark(rgba(232, 232, 237, 0.78), rgba(40, 40, 44, 0.84));
@@ -169,7 +169,7 @@ export const OVERRIDE_CSS = `
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 0 3px light-dark(rgba(0, 113, 227, 0.16), rgba(41, 151, 255, 0.24));
 }
 .dsb-zoom-slider:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 2px var(--dsb-select), 0 1px 3px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), 0 0.5px 1px rgba(0, 0, 0, 0.1);
 }
 .dsb-root .react-flow { --xy-background-color: transparent; background: var(--dsb-card); }
 .dsb-root .react-flow__viewport { will-change: transform; backface-visibility: hidden; }
@@ -464,6 +464,7 @@ function ToolButton({ active, title, onClick, className = 'dsb-dock-btn', childr
       data-active={active ? 'true' : 'false'}
       aria-pressed={active}
       className={className}
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       style={{ ...ICON_BUTTON, minWidth: 0, padding: 0, borderRadius: PILL, cornerShape: ROUND }}
     >{children}</button>
@@ -499,9 +500,10 @@ function ZoomControls({ rf }) {
   const { zoom } = useViewport()
   const percent = Math.max(10, Math.min(200, Math.round(zoom * 100)))
   const progress = ((percent - 10) / 190) * 100
+  const keepFocus = (e) => e.preventDefault()
   return (
     <div style={{ ...DOCK, position: 'absolute', left: 12, top: 12, zIndex: 10, display: 'flex', alignItems: 'center', gap: 2, padding: '4px 6px' }}>
-      <button type="button" title="缩小" className="dsb-zoom-btn" style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.zoomOut({ duration: 120 })}><Icon name="minus" size={14} /></button>
+      <button type="button" title="缩小 ←" className="dsb-zoom-btn" onMouseDown={keepFocus} style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.zoomOut({ duration: 120 })}><Icon name="minus" size={14} /></button>
       <input
         type="range"
         min={10}
@@ -514,16 +516,17 @@ function ZoomControls({ rf }) {
         style={{ '--dsb-zoom-pct': `${progress}%` }}
         onChange={(e) => rf.zoomTo(Number(e.target.value) / 100, { duration: 0 })}
       />
-      <button type="button" title="放大" className="dsb-zoom-btn" style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.zoomIn({ duration: 120 })}><Icon name="plus" size={14} /></button>
+      <button type="button" title="放大 →" className="dsb-zoom-btn" onMouseDown={keepFocus} style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.zoomIn({ duration: 120 })}><Icon name="plus" size={14} /></button>
       <button
         type="button"
         title="重置为 100%"
         className="dsb-zoom-btn"
+        onMouseDown={keepFocus}
         style={{ ...ICON_BUTTON, minWidth: 42, height: 26, padding: '0 4px', fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'inherit' }}
         onClick={() => rf.zoomTo(1, { duration: 140 })}
       >{percent}%</button>
       <span className="dsb-dock-divider" aria-hidden="true" style={{ height: 14, margin: '0 2px' }} />
-      <button type="button" title="适应窗口" className="dsb-zoom-btn" style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.fitView({ padding: 0.12, duration: 160 })}><Icon name="fit" size={15} /></button>
+      <button type="button" title="适应窗口" className="dsb-zoom-btn" onMouseDown={keepFocus} style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.fitView({ padding: 0.12, duration: 160 })}><Icon name="fit" size={15} /></button>
     </div>
   )
 }
@@ -1111,9 +1114,20 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
 
   const onKeyDown = (event) => {
     const tag = event.target.tagName
-    if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT' || event.target.isContentEditable) return
+    const isRangeInput = tag === 'INPUT' && event.target.type === 'range'
+    if (tag === 'TEXTAREA' || tag === 'SELECT' || event.target.isContentEditable || (tag === 'INPUT' && !isRangeInput)) return
     if (event.key === 'Escape') { exitOrCancel(); return }
-    if (!event.metaKey && !event.ctrlKey && !event.altKey && SHORTCUTS[event.key.toLowerCase()]) setTool(SHORTCUTS[event.key.toLowerCase()])
+    if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        if (immersive || pickerOpen) return
+        event.preventDefault()
+        const delta = event.key === 'ArrowRight' ? 0.1 : -0.1
+        const next = Math.max(0.1, Math.min(2, Math.round((rf.getZoom() + delta) * 100) / 100))
+        rf.zoomTo(next, { duration: 100 })
+        return
+      }
+      if (!isRangeInput && SHORTCUTS[event.key.toLowerCase()]) setTool(SHORTCUTS[event.key.toLowerCase()])
+    }
   }
 
   const context = useMemo(() => ({
