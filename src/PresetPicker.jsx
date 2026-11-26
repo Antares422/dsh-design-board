@@ -218,21 +218,28 @@ export function PresetPicker({ value, onChange, onClose }) {
   const focus = focusId ? byId.get(focusId) ?? null : null
   const apply = (id) => { onChange(id); onClose() }
 
-  const row = (active) => ({
-    display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '6px 8px', border: 'none', borderRadius: 10, textAlign: 'left',
-    background: active ? tint(BRAND, 8) : 'transparent', color: active ? BRAND_ACTIVE : 'inherit', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13,
-  })
-
   return (
     <>
       <div style={{ position: 'fixed', inset: 0, zIndex: 19 }} onClick={onClose} />
       <div
         onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
-        style={{ ...FLOAT, position: 'absolute', zIndex: 20, top: 8, bottom: 12, right: 12, left: 12, display: 'flex', overflow: 'hidden' }}
+        style={{
+          position: 'absolute', zIndex: 20, top: 8, bottom: 12, right: 12, left: 12,
+          display: 'flex', overflow: 'hidden',
+          borderRadius: 20,
+          background: 'light-dark(#ffffff, #222225)',
+          color: 'light-dark(#1d1d1f, #f5f5f7)',
+          border: '0.5px solid light-dark(rgba(0, 0, 0, 0.10), rgba(255, 255, 255, 0.14))',
+          boxShadow: '0 20px 60px light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.52)), 0 2px 8px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.3))',
+        }}
       >
-        <div style={{ width: 'clamp(210px, 25%, 310px)', flex: 'none', display: 'flex', flexDirection: 'column', borderRight: `1px solid ${BORDER}`, minHeight: 0 }}>
-          <div style={{ padding: '10px 8px 6px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 30, padding: '0 8px', borderRadius: 8, cornerShape: ROUND, background: 'light-dark(rgba(0,0,0,.045), rgba(255,255,255,.07))', border: '0.5px solid light-dark(rgba(0,0,0,.10), rgba(255,255,255,.12))' }}>
+        <div style={{
+          width: 'clamp(216px, 27%, 310px)', flex: 'none', display: 'flex', flexDirection: 'column', minHeight: 0,
+          background: 'light-dark(#f5f5f7, #1a1a1d)',
+          borderRight: '0.5px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1))',
+        }}>
+          <div style={{ padding: '12px 10px 8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 10px', borderRadius: 10, background: 'light-dark(rgba(0,0,0,.048), rgba(255,255,255,.08))', border: '0.5px solid light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10))' }}>
               <span style={{ display: 'inline-flex', color: FG2, flex: 'none' }}><Icon name="search" size={14} /></span>
               <input
                 autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索设计体系"
@@ -240,7 +247,7 @@ export function PresetPicker({ value, onChange, onClose }) {
               />
               {query && (
                 <button
-                  type="button" title="清除搜索" onClick={() => setQuery('')}
+                  type="button" title="清除搜索" onMouseDown={(e) => e.preventDefault()} onClick={() => setQuery('')}
                   style={{ ...ICON_BUTTON, minWidth: 18, width: 18, height: 18, padding: 0, color: FG2, flex: 'none' }}
                 >
                   <Icon name="close" size={12} />
@@ -248,18 +255,34 @@ export function PresetPicker({ value, onChange, onClose }) {
               )}
             </div>
           </div>
-          <div ref={listRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '0 8px 8px' }}>
-            <button type="button" style={row(false)} onClick={() => apply(null)}>
-              <span style={{ width: 40, height: 28, flex: 'none', borderRadius: 6, border: `1px dashed ${BORDER}` }} />
-              <span style={{ flex: 1 }}>不指定设计系统</span>
-              {!value && <Icon name="check" size={16} />}
+          <div ref={listRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '0 8px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <button
+              type="button"
+              className="dsb-picker-row"
+              data-active={!focusId && !value ? 'true' : 'false'}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => apply(null)}
+            >
+              <span style={{
+                width: 40, height: 28, flex: 'none', borderRadius: 6,
+                background: 'light-dark(rgba(0,0,0,0.04), rgba(255,255,255,0.07))',
+                border: '0.5px solid light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.12))',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: FG2,
+              }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
+                  <circle cx="8" cy="8" r="5.5" />
+                  <path d="M4.3 11.7 11.7 4.3" />
+                </svg>
+              </span>
+              <span style={{ flex: 1, fontWeight: !value ? 500 : 400 }}>不指定设计系统</span>
+              {!value && <span style={{ color: 'light-dark(#1d1d1f, #f5f5f7)', display: 'inline-flex' }}><Icon name="check" size={15} /></span>}
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 12, color: FG2, padding: '8px 8px 4px' }}>
-              <span>内置预设 · {list.length}</span>
-              <span style={{ position: 'relative', flex: 'none', display: 'inline-flex', alignItems: 'center', color: category === ALL ? FG2 : BRAND_ACTIVE }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 11, fontWeight: 500, color: FG2, padding: '10px 8px 4px', letterSpacing: '0.01em' }}>
+              <span>内置预设 {list.length}</span>
+              <span style={{ position: 'relative', flex: 'none', display: 'inline-flex', alignItems: 'center', color: category === ALL ? FG2 : 'light-dark(#1d1d1f, #f5f5f7)' }}>
                 <select
                   value={category} onChange={(e) => setCategory(e.target.value)}
-                  style={{ appearance: 'none', fieldSizing: 'content', border: 'none', outline: 'none', background: 'transparent', color: 'inherit', font: 'inherit', fontSize: 12, padding: '0 14px 0 0', cursor: 'pointer', maxWidth: 96 }}
+                  style={{ appearance: 'none', fieldSizing: 'content', border: 'none', outline: 'none', background: 'transparent', color: 'inherit', font: 'inherit', fontSize: 11, fontWeight: 500, padding: '0 14px 0 0', cursor: 'pointer', maxWidth: 96 }}
                 >
                   {categories.map(c => <option key={c} value={c}>{c === ALL ? '全部' : c}</option>)}
                 </select>
@@ -267,49 +290,74 @@ export function PresetPicker({ value, onChange, onClose }) {
               </span>
             </div>
             {list.map(p => (
-              <button key={p.id} data-id={p.id} type="button" style={row(p.id === focusId)} onClick={() => setFocusId(p.id)} onDoubleClick={() => apply(p.id)}>
+              <button
+                key={p.id} data-id={p.id} type="button"
+                className="dsb-picker-row" data-active={p.id === focusId ? 'true' : 'false'}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setFocusId(p.id)} onDoubleClick={() => apply(p.id)}
+              >
                 <Thumb preset={p} />
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                  <span style={{ display: 'block', fontWeight: p.id === focusId || p.id === value ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                   <span style={{ display: 'block', fontSize: 11, color: FG2 }}>{p.category}</span>
                 </span>
-                {p.id === value && <Icon name="check" size={16} />}
+                {p.id === value && <span style={{ color: 'light-dark(#1d1d1f, #f5f5f7)', display: 'inline-flex' }}><Icon name="check" size={15} /></span>}
               </button>
             ))}
             {!list.length && <div style={{ padding: 16, fontSize: 13, color: FG2 }}>没有匹配的设计体系</div>}
           </div>
         </div>
 
-        <div style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <button type="button" className="dsb-close-btn" title="关闭" onClick={onClose} style={CLOSE_BTN}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'light-dark(#ffffff, #222225)' }}>
+          <button type="button" className="dsb-close-btn" title="关闭" onMouseDown={(e) => e.preventDefault()} onClick={onClose} style={CLOSE_BTN}>
             <Icon name="close" size={16} />
           </button>
-          <div style={{ padding: 'clamp(14px, 2vw, 20px) calc(clamp(16px, 3vw, 28px) + 28px) 10px clamp(16px, 3vw, 28px)', flex: 'none' }}>
-            <div style={{ minWidth: 0 }}>
-              {focus ? (
-                <>
-                  <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{focus.name}</div>
+          {focus ? (
+            <>
+              <div style={{ padding: 'clamp(16px, 2vw, 22px) calc(clamp(16px, 3vw, 28px) + 28px) 10px clamp(16px, 3vw, 28px)', flex: 'none' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{focus.name}</div>
                   <div style={{ fontSize: 12, color: FG2, marginTop: 2 }}>{focus.category}</div>
-                </>
-              ) : (
-                <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 600, color: FG2 }}>设计体系预览</div>
-              )}
+                </div>
+              </div>
+              <div ref={previewRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '0 clamp(16px, 3vw, 28px) clamp(16px, 2.5vw, 24px)' }}>
+                <Preview preset={focus} showHeader={false} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, padding: '12px clamp(16px, 3vw, 28px)', borderTop: '0.5px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1))' }}>
+                <button
+                  type="button" disabled={focus.id === value}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={{
+                    ...ICON_BUTTON,
+                    flex: 'none',
+                    height: 34,
+                    padding: '0 20px',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    background: focus.id === value
+                      ? 'light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1))'
+                      : 'light-dark(#1d1d1f, #f5f5f7)',
+                    color: focus.id === value
+                      ? FG2
+                      : 'light-dark(#ffffff, #1d1d1f)',
+                    cursor: focus.id === value ? 'default' : 'pointer',
+                  }}
+                  onClick={() => apply(focus.id)}
+                >{focus.id === value ? '已选用' : '选用'}</button>
+              </div>
+            </>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 }}>
+              <span style={{
+                width: 48, height: 48, borderRadius: 980, cornerShape: ROUND,
+                background: 'light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.07))',
+                color: FG2, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Icon name="palette" size={20} />
+              </span>
+              <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 500, color: FG2, letterSpacing: '-0.01em' }}>未指定设计体系</div>
             </div>
-          </div>
-          <div ref={previewRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '0 clamp(16px, 3vw, 28px) clamp(16px, 2.5vw, 24px)' }}>
-            {focus ? (
-              <Preview preset={focus} showHeader={false} />
-            ) : (
-              <div style={{ color: FG2, fontSize: 13, paddingTop: 40, textAlign: 'center' }}>从左侧选一个设计体系预览</div>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: 8, padding: '10px clamp(16px, 3vw, 28px)', borderTop: `1px solid ${BORDER}` }}>
-            <button
-              type="button" disabled={!focus || focus.id === value}
-              style={{ ...ICON_BUTTON, ...PRIMARY, minWidth: 72, opacity: !focus || focus.id === value ? 0.4 : 1 }}
-              onClick={() => focus && apply(focus.id)}
-            >{focus && focus.id === value ? '已选用' : '选用'}</button>
-          </div>
+          )}
         </div>
       </div>
     </>

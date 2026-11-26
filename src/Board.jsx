@@ -49,6 +49,47 @@ export const OVERRIDE_CSS = `
 }
 .dsb-root button:focus, .dsb-root button:focus-visible { outline: none; box-shadow: none; }
 .dsb-root .dsb-close-btn:hover { background: light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10)); color: var(--dsb-ink); }
+.dsb-topbar-pill {
+  background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.06));
+  color: light-dark(#1d1d1f, #f5f5f7);
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.14));
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease;
+}
+.dsb-topbar-pill:hover {
+  background: light-dark(rgba(0, 0, 0, 0.065), rgba(255, 255, 255, 0.11));
+}
+.dsb-topbar-pill:active { transform: scale(0.97); }
+.dsb-topbar-pill[data-open="true"] {
+  background: light-dark(#1d1d1f, #f5f5f7);
+  color: light-dark(#ffffff, #1d1d1f);
+  border-color: transparent;
+}
+.dsb-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0.5px solid transparent;
+  border-radius: 11px;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  transition: background-color 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.dsb-picker-row:hover {
+  background: light-dark(rgba(0, 0, 0, 0.042), rgba(255, 255, 255, 0.06));
+}
+.dsb-picker-row[data-active="true"] {
+  background: light-dark(#ffffff, #303034);
+  border-color: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
+  box-shadow:
+    0 1px 4px light-dark(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.36)),
+    0 0.5px 1px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.24));
+}
 .dsb-dock-shell {
   background: light-dark(rgba(232, 232, 237, 0.78), rgba(40, 40, 44, 0.84));
   backdrop-filter: blur(26px) saturate(190%);
@@ -1201,8 +1242,9 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
           {(pageFrames.length > 0 || pageRejected.length > 0) && (
             <div style={{ position: 'relative', flex: 'none' }}>
               <button
-                type="button" title="导出当前页" disabled={exporting} onClick={() => setExportOpen(o => !o)}
-                style={{ ...ICON_BUTTON, height: 32, padding: '0 12px', gap: 6, border: `1px solid ${exportOpen ? SELECT : BORDER}`, background: exportOpen ? tint(SELECT, 8) : 'transparent', color: exportOpen ? BRAND_ACTIVE : 'inherit', opacity: exporting ? 0.5 : 1 }}
+                type="button" title="导出当前页" disabled={exporting} className="dsb-topbar-pill" data-open={exportOpen ? 'true' : 'false'}
+                onMouseDown={(e) => e.preventDefault()} onClick={() => setExportOpen(o => !o)}
+                style={{ ...ICON_BUTTON, height: 32, padding: '0 13px', gap: 6, fontWeight: 500, opacity: exporting ? 0.5 : 1 }}
               ><Icon name="download" size={15} />导出</button>
               {exportOpen && (
                 <>
@@ -1219,9 +1261,23 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
             </div>
           )}
           <button
-            type="button" title={currentPreset ? `设计体系：${currentPreset.name}` : '选择设计体系'} onClick={() => setPickerOpen(o => !o)}
-            style={{ ...ICON_BUTTON, flex: '0 1 auto', minWidth: 28, height: 32, padding: '0 14px', gap: 6, border: `1px solid ${pickerOpen ? SELECT : BORDER}`, background: pickerOpen ? tint(SELECT, 8) : 'transparent', color: pickerOpen ? BRAND_ACTIVE : 'inherit', maxWidth: 180 }}
+            type="button" title={currentPreset ? `设计体系：${currentPreset.name}` : '选择设计体系'}
+            className="dsb-topbar-pill" data-open={pickerOpen ? 'true' : 'false'}
+            onMouseDown={(e) => e.preventDefault()} onClick={() => setPickerOpen(o => !o)}
+            style={{ ...ICON_BUTTON, flex: '0 1 auto', minWidth: 28, height: 32, padding: '0 13px', gap: 6, fontWeight: 500, maxWidth: 180 }}
           >
+            {currentPreset && !pickerOpen && (
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  flex: 'none',
+                  background: currentPreset.palette?.find(c => c.name === '强调色')?.hex || BRAND,
+                }}
+              />
+            )}
             <Icon name="palette" size={15} />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentPreset ? currentPreset.name : '设计体系'}</span>
           </button>
