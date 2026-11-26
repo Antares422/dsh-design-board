@@ -163,7 +163,7 @@ export default {
         id: 'board',
         order: 120,
         title: () => '设计画布',
-        description: () => '并排对比多个设计方案，选元素、画标注，反馈直达 Agent',
+        description: () => '预览、对比与标注设计稿',
         icon: (props) => <Icon name="palette" size={props.size || 16} />,
       }],
     }), 'dsh-design-board: tab type')

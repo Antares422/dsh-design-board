@@ -26,8 +26,8 @@ import { BORDER, BRAND, BRAND_ACTIVE, CANVAS, DOCK, FG2, FLOAT, ICON_BUTTON, PIL
 const nodeTypes = { frame: FrameNode, note: NoteNode }
 const noop = () => {}
 const TOOLS = [
-  ['select', '选择 (V) · 点击或框选可多选/反选，Esc 清空'], ['hand', '抓手 (H)'], ['text', '文字 (T)'], ['eraser', '橡皮擦 (E)'],
-  ['play', '交互：直接操作方案里的页面 (I)'],
+  ['select', '选择 V · 点击或框选，Esc 清空'], ['hand', '抓手 H'], ['text', '文字 T'], ['eraser', '橡皮擦 E'],
+  ['play', '交互 I · 直接操作方案页面'],
 ]
 const SHORTCUTS = { v: 'select', h: 'hand', t: 'text', e: 'eraser', i: 'play' }
 const TOAST_MS = 2600
@@ -49,6 +49,116 @@ export const OVERRIDE_CSS = `
 }
 .dsb-root button:focus-visible { outline: 2px solid var(--dsb-select); outline-offset: 1px; }
 .dsb-root .dsb-close-btn:hover { background: light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10)); color: var(--dsb-ink); }
+.dsb-dock-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 980px;
+  background: light-dark(rgba(0, 0, 0, 0.048), rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 0.5px 1.5px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.3));
+}
+.dsb-dock-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 40px;
+  height: 32px;
+  border-radius: 980px;
+  pointer-events: none;
+  background: light-dark(#ffffff, #3a3a3e);
+  box-shadow: light-dark(0 1px 3px rgba(0, 0, 0, 0.11), 0 1px 4px rgba(0, 0, 0, 0.45)),
+    light-dark(0 0.5px 1px rgba(0, 0, 0, 0.06), 0 0.5px 1px rgba(0, 0, 0, 0.3)),
+    inset 0 0.5px 0 light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.16));
+  transition: transform 240ms cubic-bezier(0.28, 0, 0.22, 1);
+}
+.dsb-dock-btn {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 32px;
+  color: light-dark(#6e6e73, #98989d);
+  transition: color 180ms cubic-bezier(0.28, 0, 0.22, 1), transform 120ms cubic-bezier(0.28, 0, 0.22, 1), background-color 160ms ease;
+}
+.dsb-dock-btn:hover { color: light-dark(#1d1d1f, #f5f5f7); }
+.dsb-dock-btn:active { transform: scale(0.94); }
+.dsb-dock-btn[data-active="true"] { color: light-dark(#1d1d1f, #f5f5f7); }
+.dsb-dock-action {
+  width: 32px;
+  height: 32px;
+  color: light-dark(#6e6e73, #98989d);
+  transition: color 160ms ease, background-color 160ms ease, transform 120ms ease;
+}
+.dsb-dock-action:hover {
+  color: light-dark(#1d1d1f, #f5f5f7);
+  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.09));
+}
+.dsb-dock-action:active { transform: scale(0.94); }
+.dsb-dock-action[data-active="true"] {
+  color: var(--dsb-primary);
+  background: light-dark(rgba(0, 113, 227, 0.1), rgba(41, 151, 255, 0.16));
+}
+.dsb-dock-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.14));
+  flex: none;
+}
+.dsb-zoom-btn {
+  color: light-dark(#6e6e73, #98989d);
+  transition: color 160ms ease, background-color 160ms ease, transform 120ms ease;
+}
+.dsb-zoom-btn:hover {
+  color: light-dark(#1d1d1f, #f5f5f7);
+  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.09));
+}
+.dsb-zoom-btn:active { transform: scale(0.94); }
+.dsb-zoom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 76px;
+  height: 18px;
+  margin: 0 2px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.dsb-zoom-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--dsb-primary) 0%,
+    var(--dsb-primary) var(--dsb-zoom-pct, 50%),
+    light-dark(rgba(0, 0, 0, 0.13), rgba(255, 255, 255, 0.2)) var(--dsb-zoom-pct, 50%),
+    light-dark(rgba(0, 0, 0, 0.13), rgba(255, 255, 255, 0.2)) 100%
+  );
+}
+.dsb-zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5.5px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.14), rgba(255, 255, 255, 0.24));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), 0 0.5px 1px rgba(0, 0, 0, 0.1);
+  transition: transform 160ms cubic-bezier(0.28, 0, 0.22, 1), box-shadow 160ms ease;
+}
+.dsb-zoom-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.26), 0 0.5px 1px rgba(0, 0, 0, 0.12);
+}
+.dsb-zoom-slider:active::-webkit-slider-thumb {
+  transform: scale(1.16);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 0 3px light-dark(rgba(0, 113, 227, 0.16), rgba(41, 151, 255, 0.24));
+}
+.dsb-zoom-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--dsb-select), 0 1px 3px rgba(0, 0, 0, 0.22);
+}
 .dsb-root .react-flow { --xy-background-color: transparent; background: var(--dsb-card); }
 .dsb-root .react-flow__viewport { will-change: transform; backface-visibility: hidden; }
 .dsb-root .react-flow__node { padding: 0; border: none; background: transparent; box-shadow: none; backface-visibility: hidden; }
@@ -334,12 +444,17 @@ export function DirectoryPicker({ list, readBytes, open, onSelect, onCreateNew }
   )
 }
 
-function ToolButton({ active, title, onClick, children }) {
+function ToolButton({ active, title, onClick, className = 'dsb-dock-btn', children }) {
   return (
-    <button type="button" title={title} onClick={onClick} style={{
-      ...ICON_BUTTON, width: 44, height: 36, borderRadius: PILL, cornerShape: ROUND,
-      background: active ? BRAND : 'transparent', color: active ? '#fff' : DOCK.color,
-    }}>{children}</button>
+    <button
+      type="button"
+      title={title}
+      data-active={active ? 'true' : 'false'}
+      aria-pressed={active}
+      className={className}
+      onClick={onClick}
+      style={{ ...ICON_BUTTON, minWidth: 0, padding: 0, borderRadius: PILL, cornerShape: ROUND }}
+    >{children}</button>
   )
 }
 
@@ -370,12 +485,33 @@ function CanvasMarqueeLayer({ marquee }) {
 
 function ZoomControls({ rf }) {
   const { zoom } = useViewport()
+  const percent = Math.max(10, Math.min(200, Math.round(zoom * 100)))
+  const progress = ((percent - 10) / 190) * 100
   return (
-    <div style={{ ...FLOAT, borderRadius: 18, position: 'absolute', left: 12, top: 12, zIndex: 10, display: 'flex', alignItems: 'center', padding: '2px 6px' }}>
-      <button type="button" title="缩小" style={ICON_BUTTON} onClick={() => rf.zoomOut({ duration: 120 })}><Icon name="minus" size={16} /></button>
-      <button type="button" title="重置为 100%" style={{ ...ICON_BUTTON, minWidth: 48 }} onClick={() => rf.zoomTo(1, { duration: 120 })}>{Math.round(zoom * 100)}%</button>
-      <button type="button" title="放大" style={ICON_BUTTON} onClick={() => rf.zoomIn({ duration: 120 })}><Icon name="plus" size={16} /></button>
-      <button type="button" title="适应窗口" style={ICON_BUTTON} onClick={() => rf.fitView({ padding: 0.12, duration: 160 })}><Icon name="fit" size={16} /></button>
+    <div style={{ ...DOCK, position: 'absolute', left: 12, top: 12, zIndex: 10, display: 'flex', alignItems: 'center', gap: 2, padding: '4px 6px' }}>
+      <button type="button" title="缩小" className="dsb-zoom-btn" style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.zoomOut({ duration: 120 })}><Icon name="minus" size={14} /></button>
+      <input
+        type="range"
+        min={10}
+        max={200}
+        step={1}
+        value={percent}
+        aria-label="缩放比例"
+        title={`缩放 ${percent}%`}
+        className="dsb-zoom-slider"
+        style={{ '--dsb-zoom-pct': `${progress}%` }}
+        onChange={(e) => rf.zoomTo(Number(e.target.value) / 100, { duration: 0 })}
+      />
+      <button type="button" title="放大" className="dsb-zoom-btn" style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.zoomIn({ duration: 120 })}><Icon name="plus" size={14} /></button>
+      <button
+        type="button"
+        title="重置为 100%"
+        className="dsb-zoom-btn"
+        style={{ ...ICON_BUTTON, minWidth: 42, height: 26, padding: '0 4px', fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'inherit' }}
+        onClick={() => rf.zoomTo(1, { duration: 140 })}
+      >{percent}%</button>
+      <span className="dsb-dock-divider" aria-hidden="true" style={{ height: 14, margin: '0 2px' }} />
+      <button type="button" title="适应窗口" className="dsb-zoom-btn" style={{ ...ICON_BUTTON, minWidth: 26, width: 26, height: 26, padding: 0 }} onClick={() => rf.fitView({ padding: 0.12, duration: 160 })}><Icon name="fit" size={15} /></button>
     </div>
   )
 }
@@ -1061,12 +1197,22 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
 
           <ZoomControls rf={rf} />
 
-          <div style={{ ...FLOAT, ...DOCK, position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', zIndex: 10, display: 'flex', alignItems: 'center', gap: 2, padding: '6px 8px' }}>
-            {TOOLS.map(([name, title]) => (
-              <ToolButton key={name} active={tool === name} title={title} onClick={() => setTool(name)}><Icon name={name} /></ToolButton>
-            ))}
+          <div style={{ ...DOCK, position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', zIndex: 10, display: 'flex', alignItems: 'center', padding: 5 }}>
+            <div className="dsb-dock-track" role="toolbar" aria-label="画布工具">
+              <span
+                className="dsb-dock-thumb"
+                aria-hidden="true"
+                style={{ transform: `translateX(${Math.max(0, TOOLS.findIndex(([name]) => name === tool)) * 42}px)` }}
+              />
+              {TOOLS.map(([name, title]) => (
+                <ToolButton key={name} active={tool === name} title={title} onClick={() => setTool(name)}><Icon name={name} /></ToolButton>
+              ))}
+            </div>
             {pageFrames.length > 0 && (
-              <ToolButton active={menuOpen} title="方案列表" onClick={() => setMenuOpen(o => !o)}><Icon name="chevron" size={14} /></ToolButton>
+              <>
+                <span className="dsb-dock-divider" aria-hidden="true" />
+                <ToolButton active={menuOpen} title="方案列表" className="dsb-dock-action" onClick={() => setMenuOpen(o => !o)}><Icon name="chevron" size={14} /></ToolButton>
+              </>
             )}
           </div>
           {menuOpen && (

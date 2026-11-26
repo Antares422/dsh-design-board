@@ -13,11 +13,16 @@ export const PILL = 980
 // 宿主全局给圆角加了 superellipse：胶囊要改回正圆弧，大面板保留连续圆角
 export const ROUND = 'round'
 
-/** 画布下方的工具条：跟随浅/深色主题，浅色下是白胶囊，深色下是石墨胶囊。 */
+/** 画布悬浮工具条与缩放条：Apple 磨砂玻璃胶囊，浅色通透白玻璃，深色石墨玻璃。 */
 export const DOCK = {
-  background: 'light-dark(#fff, #272729)', color: 'light-dark(#1d1d1f, #f5f5f7)',
-  border: '1px solid light-dark(#d2d2d7, #272729)', borderRadius: PILL, cornerShape: ROUND,
-  boxShadow: '0 12px 32px light-dark(rgba(0,0,0,.10), rgba(0,0,0,.22))',
+  background: 'light-dark(rgba(255, 255, 255, 0.76), rgba(38, 38, 41, 0.78))',
+  backdropFilter: 'blur(22px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+  color: 'light-dark(#1d1d1f, #f5f5f7)',
+  border: '0.5px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.14))',
+  borderRadius: PILL,
+  cornerShape: ROUND,
+  boxShadow: 'light-dark(0 8px 28px rgba(0,0,0,.09), 0 10px 30px rgba(0,0,0,.34)), light-dark(0 1px 2px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.22)), inset 0 0.5px 0 light-dark(rgba(255,255,255,.92), rgba(255,255,255,.16))',
 }
 
 export const tint = (color, percent) => `color-mix(in srgb, ${color} ${percent}%, transparent)`
