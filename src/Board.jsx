@@ -49,55 +49,67 @@ export const OVERRIDE_CSS = `
 }
 .dsb-root button:focus-visible { outline: 2px solid var(--dsb-select); outline-offset: 1px; }
 .dsb-root .dsb-close-btn:hover { background: light-dark(rgba(0,0,0,.06), rgba(255,255,255,.10)); color: var(--dsb-ink); }
+.dsb-dock-shell {
+  background: light-dark(rgba(232, 232, 237, 0.78), rgba(40, 40, 44, 0.84));
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.14));
+  border-radius: 980px;
+  corner-shape: round;
+  box-shadow:
+    0 8px 28px light-dark(rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.45)),
+    0 1px 3px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.28)),
+    inset 0 0.5px 0 light-dark(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.14));
+}
 .dsb-dock-track {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 3px;
-  border-radius: 980px;
-  background: light-dark(rgba(0, 0, 0, 0.048), rgba(255, 255, 255, 0.08));
-  box-shadow: inset 0 0.5px 1.5px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.3));
 }
 .dsb-dock-thumb {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 40px;
-  height: 32px;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 36px;
   border-radius: 980px;
   pointer-events: none;
-  background: light-dark(#ffffff, #3a3a3e);
-  box-shadow: light-dark(0 1px 3px rgba(0, 0, 0, 0.11), 0 1px 4px rgba(0, 0, 0, 0.45)),
-    light-dark(0 0.5px 1px rgba(0, 0, 0, 0.06), 0 0.5px 1px rgba(0, 0, 0, 0.3)),
-    inset 0 0.5px 0 light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.16));
-  transition: transform 240ms cubic-bezier(0.28, 0, 0.22, 1);
+  background: light-dark(#ffffff, #56565c);
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.14));
+  box-sizing: border-box;
+  box-shadow:
+    0 2px 8px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.42)),
+    0 0.5px 1.5px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
+    inset 0 0.5px 0 light-dark(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.2));
+  transition: transform 260ms cubic-bezier(0.28, 0, 0.22, 1);
 }
 .dsb-dock-btn {
   position: relative;
   z-index: 1;
-  width: 40px;
-  height: 32px;
-  color: light-dark(#6e6e73, #98989d);
-  transition: color 180ms cubic-bezier(0.28, 0, 0.22, 1), transform 120ms cubic-bezier(0.28, 0, 0.22, 1), background-color 160ms ease;
+  width: 44px;
+  height: 36px;
+  color: light-dark(#6e6e73, #aeaeb2);
+  transition: color 180ms cubic-bezier(0.28, 0, 0.22, 1), transform 120ms cubic-bezier(0.28, 0, 0.22, 1);
 }
-.dsb-dock-btn:hover { color: light-dark(#1d1d1f, #f5f5f7); }
-.dsb-dock-btn:active { transform: scale(0.94); }
-.dsb-dock-btn[data-active="true"] { color: light-dark(#1d1d1f, #f5f5f7); }
+.dsb-dock-btn:hover { color: light-dark(#1d1d1f, #ffffff); }
+.dsb-dock-btn:active { transform: scale(0.93); }
+.dsb-dock-btn[data-active="true"] { color: var(--dsb-primary); }
 .dsb-dock-action {
-  width: 32px;
-  height: 32px;
-  color: light-dark(#6e6e73, #98989d);
+  width: 36px;
+  height: 36px;
+  color: light-dark(#6e6e73, #aeaeb2);
   transition: color 160ms ease, background-color 160ms ease, transform 120ms ease;
 }
 .dsb-dock-action:hover {
-  color: light-dark(#1d1d1f, #f5f5f7);
-  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.09));
+  color: light-dark(#1d1d1f, #ffffff);
+  background: light-dark(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12));
 }
-.dsb-dock-action:active { transform: scale(0.94); }
+.dsb-dock-action:active { transform: scale(0.93); }
 .dsb-dock-action[data-active="true"] {
   color: var(--dsb-primary);
-  background: light-dark(rgba(0, 113, 227, 0.1), rgba(41, 151, 255, 0.16));
+  background: light-dark(#ffffff, #56565c);
+  box-shadow: 0 1px 4px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.35));
 }
 .dsb-dock-divider {
   width: 1px;
@@ -1197,12 +1209,12 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
 
           <ZoomControls rf={rf} />
 
-          <div style={{ ...DOCK, position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', zIndex: 10, display: 'flex', alignItems: 'center', padding: 5 }}>
+          <div className="dsb-dock-shell" style={{ position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', zIndex: 10, display: 'flex', alignItems: 'center', padding: 4 }}>
             <div className="dsb-dock-track" role="toolbar" aria-label="画布工具">
               <span
                 className="dsb-dock-thumb"
                 aria-hidden="true"
-                style={{ transform: `translateX(${Math.max(0, TOOLS.findIndex(([name]) => name === tool)) * 42}px)` }}
+                style={{ transform: `translateX(${Math.max(0, TOOLS.findIndex(([name]) => name === tool)) * 46}px)` }}
               />
               {TOOLS.map(([name, title]) => (
                 <ToolButton key={name} active={tool === name} title={title} onClick={() => setTool(name)}><Icon name={name} /></ToolButton>

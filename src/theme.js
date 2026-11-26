@@ -13,16 +13,16 @@ export const PILL = 980
 // 宿主全局给圆角加了 superellipse：胶囊要改回正圆弧，大面板保留连续圆角
 export const ROUND = 'round'
 
-/** 画布悬浮工具条与缩放条：Apple 磨砂玻璃胶囊，浅色通透白玻璃，深色石墨玻璃。 */
+/** 画布悬浮玻璃胶囊：Apple 磨砂玻璃，light-dark 仅用于颜色值以保证投影生效。 */
 export const DOCK = {
-  background: 'light-dark(rgba(255, 255, 255, 0.76), rgba(38, 38, 41, 0.78))',
-  backdropFilter: 'blur(22px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+  background: 'light-dark(rgba(255, 255, 255, 0.82), rgba(38, 38, 41, 0.82))',
+  backdropFilter: 'blur(24px) saturate(190%)',
+  WebkitBackdropFilter: 'blur(24px) saturate(190%)',
   color: 'light-dark(#1d1d1f, #f5f5f7)',
   border: '0.5px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.14))',
   borderRadius: PILL,
   cornerShape: ROUND,
-  boxShadow: 'light-dark(0 8px 28px rgba(0,0,0,.09), 0 10px 30px rgba(0,0,0,.34)), light-dark(0 1px 2px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.22)), inset 0 0.5px 0 light-dark(rgba(255,255,255,.92), rgba(255,255,255,.16))',
+  boxShadow: '0 6px 24px light-dark(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.42)), 0 1px 3px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.28)), inset 0 0.5px 0 light-dark(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.16))',
 }
 
 export const tint = (color, percent) => `color-mix(in srgb, ${color} ${percent}%, transparent)`
