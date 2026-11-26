@@ -274,8 +274,8 @@ export function PresetPicker({ value, onChange, onClose }) {
                   <path d="M4.3 11.7 11.7 4.3" />
                 </svg>
               </span>
-              <span style={{ flex: 1, fontWeight: !value ? 500 : 400 }}>不指定设计系统</span>
-              {!value && <span style={{ color: 'light-dark(#1d1d1f, #f5f5f7)', display: 'inline-flex' }}><Icon name="check" size={15} /></span>}
+              <span style={{ flex: 1, fontWeight: 400 }}>不指定设计系统</span>
+              {!value && <span style={{ color: BRAND, display: 'inline-flex' }}><Icon name="check" size={15} /></span>}
             </button>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 11, fontWeight: 500, color: FG2, padding: '10px 8px 4px', letterSpacing: '0.01em' }}>
               <span>内置预设 {list.length}</span>
@@ -298,10 +298,10 @@ export function PresetPicker({ value, onChange, onClose }) {
               >
                 <Thumb preset={p} />
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: 'block', fontWeight: p.id === focusId || p.id === value ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                  <span style={{ display: 'block', fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                   <span style={{ display: 'block', fontSize: 11, color: FG2 }}>{p.category}</span>
                 </span>
-                {p.id === value && <span style={{ color: 'light-dark(#1d1d1f, #f5f5f7)', display: 'inline-flex' }}><Icon name="check" size={15} /></span>}
+                {p.id === value && <span style={{ color: BRAND, display: 'inline-flex' }}><Icon name="check" size={15} /></span>}
               </button>
             ))}
             {!list.length && <div style={{ padding: 16, fontSize: 13, color: FG2 }}>没有匹配的设计体系</div>}
@@ -336,10 +336,10 @@ export function PresetPicker({ value, onChange, onClose }) {
                     fontWeight: 500,
                     background: focus.id === value
                       ? 'light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1))'
-                      : 'light-dark(#1d1d1f, #f5f5f7)',
+                      : BRAND,
                     color: focus.id === value
                       ? FG2
-                      : 'light-dark(#ffffff, #1d1d1f)',
+                      : '#ffffff',
                     cursor: focus.id === value ? 'default' : 'pointer',
                   }}
                   onClick={() => apply(focus.id)}

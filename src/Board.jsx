@@ -63,21 +63,23 @@ export const OVERRIDE_CSS = `
   font-family: inherit;
   white-space: nowrap;
   cursor: pointer;
-  background: light-dark(#f5f5f7, rgba(255, 255, 255, 0.08));
+  background: light-dark(#f2f2f7, rgba(255, 255, 255, 0.08));
   color: light-dark(#1d1d1f, #f5f5f7);
-  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.10), rgba(255, 255, 255, 0.14));
-  box-shadow: 0 0.5px 1px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.24));
-  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease;
+  border: 0.5px solid light-dark(rgba(0, 0, 0, 0.07), rgba(255, 255, 255, 0.12));
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 180ms ease, transform 120ms ease;
 }
 .dsb-topbar-pill:hover {
-  background: light-dark(#eaeaef, rgba(255, 255, 255, 0.14));
+  background: light-dark(#e8e8ee, rgba(255, 255, 255, 0.13));
 }
 .dsb-topbar-pill:active { transform: scale(0.97); }
 .dsb-topbar-pill[data-open="true"] {
-  background: light-dark(#1d1d1f, #f5f5f7);
-  color: light-dark(#ffffff, #1d1d1f);
-  border-color: transparent;
-  box-shadow: 0 2px 8px light-dark(rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.36));
+  background: light-dark(#ffffff, #3a3a3e);
+  color: var(--dsb-primary);
+  border-color: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.16));
+  box-shadow:
+    0 2px 8px light-dark(rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.38)),
+    0 0.5px 1.5px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.24)),
+    inset 0 0.5px 0 light-dark(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.18));
 }
 .dsb-picker-row {
   display: flex;
