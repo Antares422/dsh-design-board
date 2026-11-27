@@ -27,12 +27,14 @@ export default {
       parts.set(sessionId, next)
       return fetch('/dsh-design-board/context', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, text: composeContext({ board: '', feedback: '', preset: '', ...next }) }),
       }).catch(() => {})
     }
     const syncBindingToServer = (sessionId, boardPath) => fetch('/dsh-design-board/binding', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, boardPath }),
     }).catch(() => {})
@@ -126,7 +128,10 @@ export default {
           if (isKnownBlank(sessionId)) { clearSessionDesign(sessionId); cleanup(); return }
           polling = true
           try {
-            const res = await fetch(`/dsh-design-board/binding?sessionId=${encodeURIComponent(sessionId)}`, { signal: controller.signal })
+            const res = await fetch(`/dsh-design-board/binding?sessionId=${encodeURIComponent(sessionId)}`, {
+              credentials: 'same-origin',
+              signal: controller.signal,
+            })
             if (!res.ok || controller.signal.aborted) return
             const data = await res.json()
             if (!data?.boardPath || controller.signal.aborted || isKnownBlank(sessionId)) return

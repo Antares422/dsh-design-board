@@ -421,3 +421,72 @@ test('新会话（blank）绝不锁定设计目录，且残留锁定会被自动
   assert.deepEqual(await postHostBinding('s-cold-active', 'design/cold/board.json'), { accepted: true, boardPath: 'design/cold/board.json' })
   assert.deepEqual(await postHostBinding('s-active', 'design/real/board.json'), { accepted: true, boardPath: 'design/real/board.json' })
 })
+
+test('HTTP 路由接入 DSH connection.admit / requestRejection 准入校验，拒绝跨站与未授权请求', async () => {
+  const hostMod = await import(new URL('../index.js', import.meta.url).href)
+  const routes = new Map()
+  let admitResult = { rejection: 403 }
+  hostMod.apply({
+    get(service) {
+      if (service === 'webServer') return { register: ({ path, handler }) => { routes.set(path, handler); return () => {} } }
+      if (service === 'connection') return { admit: () => admitResult }
+      return undefined
+    },
+    effect(fn) { fn() },
+    on() {},
+    skills: { register: () => () => {} },
+    tools: { register: () => () => {} },
+  })
+
+  const hit = async (path, method, body) => {
+    const req = Readable.from(body === undefined ? [] : [JSON.stringify(body)])
+    req.method = method
+    req.url = path
+    let status = 0
+    let out = ''
+    await routes.get(path.split('?')[0])(req, {
+      writeHead(s) { status = s },
+      end(c = '') { out += c },
+    })
+    return { status, out }
+  }
+
+  // 403 跨站请求被拦截
+  assert.equal((await hit('/dsh-design-board/context', 'POST', { sessionId: 's1', text: 'evil' })).status, 403)
+  assert.equal((await hit('/dsh-design-board/binding?sessionId=s1', 'GET')).status, 403)
+
+  // 401 未认证请求被拦截
+  admitResult = { rejection: 401 }
+  assert.equal((await hit('/dsh-design-board/context', 'POST', { sessionId: 's1', text: 'evil' })).status, 401)
+
+  // 准入放行后正常响应
+  admitResult = { peer: { principal: { kind: 'owner' } } }
+  assert.equal((await hit('/dsh-design-board/context', 'POST', { sessionId: 's1', text: 'ok' })).status, 204)
+  const okBind = await hit('/dsh-design-board/binding?sessionId=s1', 'GET')
+  assert.equal(okBind.status, 200)
+  assert.deepEqual(JSON.parse(okBind.out), { boardPath: null })
+
+  // 兼容旧版 DSH 的 requestRejection 降级路径
+  const legacyRoutes = new Map()
+  let legacyRejection = 403
+  hostMod.apply({
+    get(service) {
+      if (service === 'webServer') return { register: ({ path, handler }) => { legacyRoutes.set(path, handler); return () => {} } }
+      if (service === 'connection') return { requestRejection: () => legacyRejection }
+      return undefined
+    },
+    effect(fn) { fn() },
+    on() {},
+    skills: { register: () => () => {} },
+    tools: { register: () => () => {} },
+  })
+  const req = Readable.from([])
+  req.method = 'GET'
+  req.url = '/dsh-design-board/binding?sessionId=s1'
+  let st = 0
+  await legacyRoutes.get('/dsh-design-board/binding')(req, { writeHead(s) { st = s }, end() {} })
+  assert.equal(st, 403)
+  legacyRejection = undefined
+  await legacyRoutes.get('/dsh-design-board/binding')(req, { writeHead(s) { st = s }, end() {} })
+  assert.equal(st, 200)
+})

@@ -62,15 +62,36 @@ export function apply(ctx) {
       if (bindings.get(session.id)) return
     }
   }
+  const withAdmission = (handler) => (req, res) => {
+    const connection = ctx.get('connection')
+    if (connection) {
+      if (typeof connection.admit === 'function') {
+        const admission = connection.admit(req)
+        if (admission && 'rejection' in admission) {
+          res.writeHead(admission.rejection)
+          res.end(admission.rejection === 401 ? 'unauthorized' : 'forbidden')
+          return
+        }
+      } else if (typeof connection.requestRejection === 'function') {
+        const status = connection.requestRejection(req)
+        if (status) {
+          res.writeHead(status)
+          res.end(status === 401 ? 'unauthorized' : 'forbidden')
+          return
+        }
+      }
+    }
+    return handler(req, res)
+  }
   ctx.effect(() => ctx.get('webServer').register({
     kind: 'exact',
     path: '/dsh-design-board/context',
-    handler: createContextHandler(store),
+    handler: withAdmission(createContextHandler(store)),
   }), 'dsh-design-board: hidden context route')
   ctx.effect(() => ctx.get('webServer').register({
     kind: 'exact',
     path: '/dsh-design-board/binding',
-    handler: createBindingHandler(bindings, onBind, isBlankSession),
+    handler: withAdmission(createBindingHandler(bindings, onBind, isBlankSession)),
   }), 'dsh-design-board: session binding route')
   ctx.on('session/event', (session, event) => {
     if (event?.type === 'deliverables/presented') claimPresentedFiles(session, event.data?.files)
