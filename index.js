@@ -37,11 +37,21 @@ function createContextStore() {
   const latest = /* @__PURE__ */ new Map();
   const injected = /* @__PURE__ */ new Map();
   return {
+    peek: (sessionId) => latest.get(sessionId),
     set: (sessionId, text2) => {
       latest.set(sessionId, text2);
     },
-    ensure: (sessionId, text2) => {
-      if (text2 && latest.get(sessionId) === void 0) latest.set(sessionId, text2);
+    ensure(sessionId, text2) {
+      if (!text2) return;
+      const current = latest.get(sessionId);
+      if (!current) {
+        latest.set(sessionId, text2);
+        return;
+      }
+      if (text2.startsWith("<design-board ") && !current.includes("<design-board ")) {
+        latest.set(sessionId, `${text2}
+${current}`);
+      }
     },
     take(sessionId) {
       const text2 = latest.get(sessionId);
@@ -348,12 +358,20 @@ function apply(ctx) {
   ctx.on("session/event", (session, event) => {
     if (event?.type === "deliverables/presented") claimPresentedFiles(session, event.data?.files);
   });
+  const boardFromContext = (sessionId) => {
+    const text2 = store.peek?.(sessionId);
+    if (typeof text2 !== "string") return void 0;
+    const m = /<design-board\b[^>]*\bboard="([^"]+)"/.exec(text2);
+    return m ? boardPathOfDesignFile(m[1]) : void 0;
+  };
   ctx.on("tools/result", (exec, result) => {
     if (result?.isError || !exec?.agent?.session || exec.agent.session.header?.origin === "subagent") return;
     const sid = exec.agent.session.id;
     if (isDesignBoardSkillRead(exec)) {
-      const isolated = sessionBoardPath(sid);
-      if (isolated) claimDesign(sid, isolated);
+      if (bindings.get(sid)) return;
+      const chosen = boardFromContext(sid);
+      const target = chosen || sessionBoardPath(sid);
+      if (target) claimDesign(sid, target);
       return;
     }
     const boardPath = extractToolDesignPath(exec);

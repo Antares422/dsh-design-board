@@ -11,8 +11,16 @@ export function createContextStore() {
   const latest = new Map()
   const injected = new Map()
   return {
+    peek: (sessionId) => latest.get(sessionId),
     set: (sessionId, text) => { latest.set(sessionId, text) },
-    ensure: (sessionId, text) => { if (text && latest.get(sessionId) === undefined) latest.set(sessionId, text) },
+    ensure(sessionId, text) {
+      if (!text) return
+      const current = latest.get(sessionId)
+      if (!current) { latest.set(sessionId, text); return }
+      if (text.startsWith('<design-board ') && !current.includes('<design-board ')) {
+        latest.set(sessionId, `${text}\n${current}`)
+      }
+    },
     take(sessionId) {
       const text = latest.get(sessionId)
       if (text === undefined || text === (injected.get(sessionId) ?? '')) return undefined

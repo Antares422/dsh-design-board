@@ -20,7 +20,7 @@ import { fileAddress, pathOfAddress } from './paths.js'
 import { useFrames } from './useFrames.js'
 import { splitFrames } from './validate.js'
 import { scanDesignDirs } from './scan.js'
-import { resolveSessionDesignPhase, sessionBoardPath } from './sessionDesign.js'
+import { resolveSessionDesignPhase } from './sessionDesign.js'
 import { BORDER, BRAND, BRAND_ACTIVE, CANVAS, DOCK, FG2, FLOAT, ICON_BUTTON, PILL, ROUND, SELECT, DISPLAY, tint } from './theme.js'
 
 const nodeTypes = { frame: FrameNode, note: NoteNode }
@@ -511,11 +511,13 @@ export function DirectoryPickerView({ state, open, onCreateNew }) {
                 </span>
               </button>
             )}
-            {state.items.map(item => (
-              <button key={item.path} type="button" className="dsb-dir-card" title={item.name} onMouseDown={(e) => e.preventDefault()} onClick={() => open(`${item.path}/board.json`)}>
-                <HtmlPreview html={item.preview?.html} width={item.preview?.width} title={item.name} />
+            {state.items.map(item => {
+              const label = item.title || item.name
+              return (
+              <button key={item.path} type="button" className="dsb-dir-card" title={label} onMouseDown={(e) => e.preventDefault()} onClick={() => open(`${item.path}/board.json`)}>
+                <HtmlPreview html={item.preview?.html} width={item.preview?.width} title={label} />
                 <span className="dsb-dir-meta">
-                  <strong style={{ display: 'block', fontFamily: DISPLAY, fontSize: 15, fontWeight: 600, lineHeight: '20px', letterSpacing: '-0.015em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</strong>
+                  <strong style={{ display: 'block', fontFamily: DISPLAY, fontSize: 15, fontWeight: 600, lineHeight: '20px', letterSpacing: '-0.015em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</strong>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 4, lineHeight: '18px' }}>
                     <span style={{ color: FG2, fontSize: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{item.files} 个文件</span>
                     <span className="dsb-dir-enter">
@@ -525,7 +527,8 @@ export function DirectoryPickerView({ state, open, onCreateNew }) {
                   </span>
                 </span>
               </button>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -1429,7 +1432,7 @@ function BoardInner({ sessionId, boardPath, isBound = true, onBack, onCommitBind
   )
 }
 
-/** 右侧栏正文：按会话严格隔离，每个会话固定读写专属目录 `design/<sessionId>/board.json`（兼容旧会话已有绑定），不扫描也不展示其他会话的设计目录。 */
+/** 右侧栏正文：未绑定会话先展示设计目录（可新建空白画布或打开旧设计续改），返回或关标签均可重选；仅在 Agent 实际产出或已有对话的画布交互后正式绑定隔离。 */
 export function Board(props) {
   const { tab } = props.useTabInfo()
   const sessionSnap = props.useSession ? props.useSession(s => s) : undefined
@@ -1440,8 +1443,8 @@ export function Board(props) {
     fallbackBlank: Boolean(props.isBlankSession?.()),
   })
   const requestedPath = (tab.contentId && pathOfAddress(tab.contentId)) || null
-  const isolatedPath = sessionBoardPath(props.sessionId) || null
   const [boundPath, setBoundPath] = useState(() => props.getDesignPath?.() || null)
+  const [browsingPath, setBrowsingPath] = useState(null)
   useEffect(() => {
     setBoundPath(props.getDesignPath?.() || null)
     return props.subscribeDesign?.(() => setBoundPath(props.getDesignPath?.() || null))
@@ -1452,14 +1455,30 @@ export function Board(props) {
       setBoundPath(null)
     }
   }, [phase, boundPath, props.clearDesign, props.getDesignPath, props.sessionId])
+  useEffect(() => { setBrowsingPath(null) }, [props.sessionId])
   const effectiveBoundPath = phase === 'blank' ? null : boundPath
-  const boardPath = effectiveBoundPath || isolatedPath || requestedPath || null
   const open = useCallback((path) => tab.actions.openResource(fileAddress(props.sessionId, path), { replaceTab: true }), [tab.actions, props.sessionId])
   useEffect(() => {
-    if (boardPath && requestedPath && requestedPath !== boardPath) open(boardPath)
-  }, [boardPath, requestedPath, open])
+    if (effectiveBoundPath && requestedPath && requestedPath !== effectiveBoundPath) open(effectiveBoundPath)
+  }, [effectiveBoundPath, requestedPath, open])
+  const activePath = effectiveBoundPath || browsingPath || requestedPath
+  const boardPath = activePath === BLANK ? null : activePath
   const isBound = Boolean(effectiveBoundPath)
   const canBind = phase === 'active' && !isBound && Boolean(boardPath)
+  const boundRef = useRef(isBound)
+  boundRef.current = isBound
+  useEffect(() => {
+    if (!effectiveBoundPath && activePath === null) {
+      props.syncBoard?.('')
+      props.syncFeedback?.('')
+    }
+  }, [effectiveBoundPath, activePath, props.syncBoard, props.syncFeedback])
+  useEffect(() => () => {
+    if (!boundRef.current) {
+      props.syncBoard?.('')
+      props.syncFeedback?.('')
+    }
+  }, [props.syncBoard, props.syncFeedback])
   const commitBind = useCallback(() => {
     if (!boardPath || phase !== 'active') return false
     if (props.bindDesign?.(boardPath) === false) return false
@@ -1468,6 +1487,25 @@ export function Board(props) {
     if (requestedPath && requestedPath !== next) open(next)
     return true
   }, [boardPath, phase, props.bindDesign, props.getDesignPath, requestedPath, open])
+  const backToDirs = useCallback(() => {
+    setBrowsingPath(null)
+    if (requestedPath) tab.actions.openTab?.('design-board', { replaceTab: true })
+  }, [requestedPath, tab.actions])
+  if (activePath === null) {
+    return (
+      <ErrorBoundary>
+        <DirectoryPicker
+          sessionId={props.sessionId}
+          syncPreset={props.syncPreset}
+          list={props.list}
+          readBytes={props.readBytes}
+          open={setBrowsingPath}
+          onSelect={setBrowsingPath}
+          onCreateNew={() => setBrowsingPath(BLANK)}
+        />
+      </ErrorBoundary>
+    )
+  }
   return (
     <ErrorBoundary>
       <ReactFlowProvider>
@@ -1476,6 +1514,7 @@ export function Board(props) {
           sessionId={props.sessionId}
           boardPath={boardPath}
           isBound={isBound}
+          onBack={isBound ? undefined : backToDirs}
           onCommitBind={canBind ? commitBind : undefined}
           readBytes={props.readBytes}
           list={props.list}

@@ -12,19 +12,21 @@ async function decodeFile(readBytes, filePath) {
   } catch { return undefined }
 }
 
-async function readFirstPreview(dirPath, entries, readBytes) {
+async function readBoardMeta(dirPath, entries, readBytes) {
+  let title
   const hasManifest = entries.some(e => e.type === 'file' && e.name === 'board.json')
   if (hasManifest) {
     const raw = await decodeFile(readBytes, `${dirPath}/board.json`)
     if (raw) {
       try {
         const manifest = normalizeManifest(JSON.parse(raw))
+        if (manifest.title && manifest.title !== '设计画布') title = manifest.title
         for (const frame of manifest.frames) {
           if (frame.file.startsWith('/')) continue
           if (frame.file.split('/').includes('..')) continue
           const html = await decodeFile(readBytes, `${dirPath}/${frame.file}`)
           if (html !== undefined) {
-            return { html, width: frame.width ?? metaOfHtml(html).width ?? 1280, file: frame.file }
+            return { title, preview: { html, width: frame.width ?? metaOfHtml(html).width ?? 1280, file: frame.file } }
           }
         }
       } catch { /* 清单不可用时回退按目录内 html 顺序读取 */ }
@@ -37,10 +39,10 @@ async function readFirstPreview(dirPath, entries, readBytes) {
   for (const name of htmlFiles) {
     const html = await decodeFile(readBytes, `${dirPath}/${name}`)
     if (html !== undefined) {
-      return { html, width: metaOfHtml(html).width ?? 1280, file: name }
+      return { title, preview: { html, width: metaOfHtml(html).width ?? 1280, file: name } }
     }
   }
-  return null
+  return { title, preview: null }
 }
 
 /**
@@ -70,7 +72,9 @@ export async function scanDesignDirs(list, readBytes) {
       if (!sub.ok || !sub.value.entries.some(e => e.type === 'file' && (e.name === 'board.json' || HTML_FILE.test(e.name)))) return undefined
       const manifest = sub.value.entries.find(e => e.type === 'file' && e.name === 'board.json')
       const base = { path, name: entry.name, files: sub.value.entries.filter(e => e.type === 'file').length, updatedAt: manifest?.modifiedAt ?? manifest?.updatedAt }
-      return readBytes ? { ...base, preview: await readFirstPreview(path, sub.value.entries, readBytes) } : base
+      if (!readBytes) return base
+      const meta = await readBoardMeta(path, sub.value.entries, readBytes)
+      return meta.title ? { ...base, title: meta.title, preview: meta.preview } : { ...base, preview: meta.preview }
     }))
   return rows.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
 }

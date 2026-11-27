@@ -97,6 +97,7 @@ export function normalizeManifest(raw) {
 }
 
 const HTML_FILE = /\.html?$/i
+const SESSION_DIR_NAME = /^(?:session[-_][a-z0-9-]+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
 
 /** 没有 board.json 时：目录里的 html 按文件名排成帧；标题先用文件名，读到内容后由 fillFromHtml 补。 */
 export function manifestFromListing(dir, entries) {
@@ -108,7 +109,9 @@ export function manifestFromListing(dir, entries) {
       const id = file.replace(HTML_FILE, '')
       return { id, title: id, file, auto: true }
     })
-  return { title: dir.split('/').pop() || '设计画布', frames, pages: [], notes: [] }
+  const leaf = dir.split('/').pop() || ''
+  const title = !leaf || !frames.length || SESSION_DIR_NAME.test(leaf) ? '设计画布' : leaf
+  return { title, frames, pages: [], notes: [] }
 }
 
 /** 从页面自身取 <title> 和 viewport 里的 width/height（都是数字才算）。 */

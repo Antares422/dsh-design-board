@@ -105,7 +105,7 @@ test('createBindingHandler 支持查询与幂等首次绑定通知', async () =>
   assert.equal(buildBoardBinding('design/one/board.json'), '<design-board dir="design/one" board="design/one/board.json"/>')
 })
 
-test('严格按会话隔离：每个会话直达专属目录 design/<sessionId>/board.json，不展示也不读取其他会话目录', async () => {
+test('未绑定会话打开目录页，浏览不锁死会话，关标签重开仍回到目录选择页；正式绑定后直达画布', async () => {
   assert.equal(sessionDesignSlug('ses_abc-123'), 'ses_abc-123')
   assert.equal(sessionDesignSlug('  a/b:c  '), 'a_b_c')
   assert.equal(sessionBoardPath('s1'), 'design/s1/board.json')
@@ -154,20 +154,23 @@ test('严格按会话隔离：每个会话直达专属目录 design/<sessionId>/
     subscribeDesign: fn => bindings.subscribe(sessionId, fn),
   })
 
-  // 未绑定会话首次打开：直接进入本会话专属画布，绝不渲染跨会话设计目录页
+  // 未绑定会话首次打开：渲染设计目录页，方便新建或选择已有设计
   const unboundHtml = renderToStaticMarkup(React.createElement(Board, makeProps('s1')))
-  assert.doesNotMatch(unboundHtml, /设计目录/)
-  assert.match(unboundHtml, /加载中/)
+  assert.match(unboundHtml, /设计目录/)
   assert.equal(bindings.get('s1'), undefined)
 
-  // 即使尝试通过资源地址打开别的目录，也不会跨会话写入或读取
-  const foreignHtml = renderToStaticMarkup(
-    React.createElement(Board, makeProps('s1', 'dsh-resource://file/session/s1/design/other-session/board.json')),
+  // 未绑定会话浏览某个 board.json：仅进入浏览态，不会写入永久绑定
+  const browseResourceHtml = renderToStaticMarkup(
+    React.createElement(Board, makeProps('s1', 'dsh-resource://file/session/s1/design/alpha/board.json')),
   )
-  assert.doesNotMatch(foreignHtml, /设计目录/)
+  assert.match(browseResourceHtml, /加载中/)
   assert.equal(bindings.get('s1'), undefined)
 
-  // 旧会话若已有历史绑定，仍兼容直接打开其绑定画布
+  // 关掉浏览标签重新打开目录入口：依然回到设计目录页，可自由重选
+  const reopenedHtml = renderToStaticMarkup(React.createElement(Board, makeProps('s1')))
+  assert.match(reopenedHtml, /设计目录/)
+
+  // 一旦正式绑定后，再打开目录入口直接进入已绑定看板，不再显示目录选择页
   bindings.bind('s1', 'design/alpha/board.json')
   const boundHtml = renderToStaticMarkup(React.createElement(Board, makeProps('s1')))
   assert.doesNotMatch(boundHtml, /设计目录/)
@@ -241,8 +244,15 @@ test('host 侧自动认领当前会话的 present 与写入目录，忽略 subag
   )
   assert.equal(await getBinding('main-2'), 'design/checkout/board.json')
 
-  // 读取 design-board 技能即自动为当前会话分配并下发专属目录 design/<sessionId>/board.json
+  // 读取 design-board 技能即自动为当前会话分配并下发专属目录 design/<sessionId>/board.json（同时保留已选预设）
   const skillSession = { id: 'ses-iso-9', header: { cwd: '/tmp/ws' } }
+  const postContext = async (sessionId, text) => {
+    const r = Readable.from([JSON.stringify({ sessionId, text })])
+    r.method = 'POST'
+    r.url = '/dsh-design-board/context'
+    await routes.get('/dsh-design-board/context')(r, { writeHead() {}, end() {} })
+  }
+  await postContext('ses-iso-9', '<design-preset id="airbnb" name="Airbnb"/>')
   listeners.get('tools/result')(
     { name: 'skill', arguments: { name: 'design-board' }, agent: { session: skillSession } },
     { isError: false },
@@ -254,6 +264,16 @@ test('host 侧自动认领当前会话的 present 与写入目录，忽略 subag
   )
   assert.equal(isoStep.messages.length, 2)
   assert.match(isoStep.messages[1].content[0].text, /<design-board dir="design\/ses-iso-9" board="design\/ses-iso-9\/board\.json"\/>/)
+  assert.match(isoStep.messages[1].content[0].text, /<design-preset id="airbnb" name="Airbnb"\/>/)
+
+  // 若用户在目录里主动选定了已有设计，读取 design-board 技能时尊重用户所选目录而不另建新目录
+  const chosenSession = { id: 'ses-chosen-1', header: { cwd: '/tmp/ws' } }
+  await postContext('ses-chosen-1', '<design-board dir="design/existing" board="design/existing/board.json"/>')
+  listeners.get('tools/result')(
+    { name: 'skill', arguments: { name: 'design-board' }, agent: { session: chosenSession } },
+    { isError: false },
+  )
+  assert.equal(await getBinding('ses-chosen-1'), 'design/existing/board.json')
 })
 
 test('clear 移除内存与持久化绑定并通知订阅者，resolveSessionDesignPhase 区分 active/blank/settling', () => {
@@ -363,8 +383,7 @@ test('新会话（blank）绝不锁定设计目录，且残留锁定会被自动
     clearDesign: () => uiBindings.clear('s-stuck'),
     subscribeDesign: fn => uiBindings.subscribe('s-stuck', fn),
   }))
-  assert.doesNotMatch(html, /设计目录/)
-  assert.match(html, /加载中/)
+  assert.match(html, /设计目录/)
 
   // Host 侧接入 sessions 服务：零对话会话拒绝 POST /dsh-design-board/binding，有 turn/start 会话放行
   const hostMod = await import(new URL('../index.js', import.meta.url).href)

@@ -75,12 +75,20 @@ export function apply(ctx) {
   ctx.on('session/event', (session, event) => {
     if (event?.type === 'deliverables/presented') claimPresentedFiles(session, event.data?.files)
   })
+  const boardFromContext = (sessionId) => {
+    const text = store.peek?.(sessionId)
+    if (typeof text !== 'string') return undefined
+    const m = /<design-board\b[^>]*\bboard="([^"]+)"/.exec(text)
+    return m ? boardPathOfDesignFile(m[1]) : undefined
+  }
   ctx.on('tools/result', (exec, result) => {
     if (result?.isError || !exec?.agent?.session || exec.agent.session.header?.origin === 'subagent') return
     const sid = exec.agent.session.id
     if (isDesignBoardSkillRead(exec)) {
-      const isolated = sessionBoardPath(sid)
-      if (isolated) claimDesign(sid, isolated)
+      if (bindings.get(sid)) return
+      const chosen = boardFromContext(sid)
+      const target = chosen || sessionBoardPath(sid)
+      if (target) claimDesign(sid, target)
       return
     }
     const boardPath = extractToolDesignPath(exec)

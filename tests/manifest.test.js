@@ -38,8 +38,15 @@ test('manifestFromListing：没有清单时目录里的 html 按文件名排成�
   assert.deepEqual(m.frames.map(f => [f.id, f.file, f.title, f.auto]), [['a', 'a.html', 'a', true], ['b', 'b.html', 'b', true], ['c', 'c.HTML', 'c', true]])
 })
 
-test('manifestFromListing：目录里一个 html 都没有就是空看板，不抛错', () => {
-  assert.deepEqual(manifestFromListing('design/x', []).frames, [])
+test('manifestFromListing：目录里一个 html 都没有或目录名为会话 ID 时标题显示设计画布，不抛错', () => {
+  const empty = manifestFromListing('design/x', [])
+  assert.deepEqual(empty.frames, [])
+  assert.equal(empty.title, '设计画布')
+
+  const sessionListed = manifestFromListing('design/session-04b93398-8f62-4db6-83be-969c0abb9813', [
+    { name: 'a.html', type: 'file' },
+  ])
+  assert.equal(sessionListed.title, '设计画布')
 })
 
 test('metaOfHtml：取 <title> 和 viewport 里的 width/height', () => {
